@@ -1,4 +1,3 @@
-// src/navigation/AppNavigator.js
 import React, { useContext } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -31,6 +30,9 @@ import FeePage from '../dashboard/admin/studentManagement/fees/FeePage';
 
 // Student Profile
 import StudentProfile from '../dashboard/admin/studentManagement/StudentProfile';
+
+// Queries / Contact Us Form Component
+import QueriesForm from '../components/QueriesForm';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -147,6 +149,8 @@ export default function AppNavigator() {
         <Stack.Screen name="StudentPanel" component={StudentDashboard} />
         <Stack.Screen name="FeePage" component={FeePage} />
         <Stack.Screen name="StudentProfile" component={StudentProfile} />
+        {/* Registered Contact Us / Queries Form Route */}
+        <Stack.Screen name="ContactUs" component={QueriesForm} />
       </Stack.Navigator>
     </NavigationContainer>
   );

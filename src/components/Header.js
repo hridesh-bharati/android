@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Modal, ScrollView, Dimensions, Platform } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '../constants/theme';
 
 const { width } = Dimensions.get('window');
 
 export default function Header() {
+  const navigation = useNavigation();
   const [sidebarVisible, setSidebarVisible] = useState(false);
 
   const toggleSidebar = () => {
@@ -84,9 +86,9 @@ export default function Header() {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sidebarScroll}>
               
               <Text style={styles.sectionHeaderLabel}>Main Navigation</Text>
-              <SidebarItem icon="home" label="Home" />
-              <SidebarItem icon="menu-book" label="Courses" />
-              <SidebarItem icon="file-document-edit" label="Admission" iconType="community" />
+              <SidebarItem icon="home" label="Home" onPress={() => { toggleSidebar(); navigation.navigate('MainTabs', { screen: 'Home' }); }} />
+              <SidebarItem icon="menu-book" label="Courses" onPress={() => { toggleSidebar(); navigation.navigate('MainTabs', { screen: 'Courses' }); }} />
+              <SidebarItem icon="file-document-edit" label="Admission" iconType="community" onPress={() => { toggleSidebar(); navigation.navigate('MainTabs', { screen: 'Admission' }); }} />
 
               <Text style={styles.sectionHeaderLabel}>Student Zone & Updates</Text>
               <SidebarItem icon="notifications-none" label="Notices" />
@@ -96,11 +98,14 @@ export default function Header() {
               <SidebarItem icon="perm-media" label="Gallery" />
 
               <Text style={styles.sectionHeaderLabel}>Services & Support</Text>
-              <SidebarItem icon="payment" label="Fee Payment" />
-              <SidebarItem icon="file-document-edit-outline" label="Online Admission" iconType="community" />
-              <SidebarItem icon="headset-mic" label="Contact Us" />
+              <SidebarItem icon="payment" label="Fee Payment" onPress={() => { toggleSidebar(); navigation.navigate('FeePage'); }} />
+              <SidebarItem icon="file-document-edit-outline" label="Online Admission" iconType="community" onPress={() => { toggleSidebar(); navigation.navigate('MainTabs', { screen: 'Admission' }); }} />
+              
+              {/* Contact Us Route Added Here */}
+              <SidebarItem icon="headset-mic" label="Contact Us" onPress={() => { toggleSidebar(); navigation.navigate('ContactUs'); }} />
+              
               <SidebarItem icon="settings" label="Settings" />
-              <SidebarItem icon="help-outline" label="Help & Support" />
+              <SidebarItem icon="help-outline" label="Help & Support" onPress={() => { toggleSidebar(); navigation.navigate('ContactUs'); }} />
               <SidebarItem icon="logout" label="Logout" color="#ef4444" />
 
               <View style={styles.sidebarFooter}>
@@ -114,9 +119,9 @@ export default function Header() {
   );
 }
 
-function SidebarItem({ icon, label, iconType, color = '#1e293b' }) {
+function SidebarItem({ icon, label, iconType, color = '#1e293b', onPress }) {
   return (
-    <TouchableOpacity style={styles.sidebarItem} activeOpacity={0.7}>
+    <TouchableOpacity style={styles.sidebarItem} activeOpacity={0.7} onPress={onPress}>
       {iconType === 'community' ? (
         <MaterialCommunityIcons name={icon} size={22} color={color} style={styles.sidebarIcon} />
       ) : (

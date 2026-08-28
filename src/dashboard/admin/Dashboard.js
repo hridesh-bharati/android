@@ -1,4 +1,4 @@
-// src/dashboard/admin/AdminDashboardMain.js
+// src/dashboard/admin/Dashboard.js
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, ActivityIndicator } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -53,12 +53,18 @@ export default function AdminDashboardMain({ activeTab, onNavigate }) {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 50 }}>
-      {/* Light Clean Console Header Banner */}
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
+      {/* Modern Clean Header Card */}
       <View style={styles.welcomeBanner}>
-        <View style={styles.bannerBadge}>
-          <MaterialCommunityIcons name="shield-check" size={12} color="#0284c7" />
-          <Text style={styles.bannerBadgeText}>Drishtee Console</Text>
+        <View style={styles.bannerHeaderTop}>
+          <View style={styles.bannerBadge}>
+            <MaterialCommunityIcons name="shield-check" size={12} color="#0284c7" />
+            <Text style={styles.bannerBadgeText}>Drishtee Console</Text>
+          </View>
+          <View style={styles.liveBadgeRow}>
+            <View style={styles.liveDot} />
+            <Text style={styles.liveBadgeText}>ONLINE</Text>
+          </View>
         </View>
         <Text style={styles.bannerTitle}>Welcome back, Hridesh 👋</Text>
         <Text style={styles.bannerSubtitle}>
@@ -66,9 +72,9 @@ export default function AdminDashboardMain({ activeTab, onNavigate }) {
         </Text>
       </View>
 
-      {/* Metrics Grid */}
+      {/* Clean Modern Metrics Grid */}
       <View style={styles.metricsGrid}>
-        <View style={[styles.metricCard, { borderLeftColor: '#7c3aed' }]}>
+        <View style={[styles.metricCard, { borderTopColor: '#7c3aed' }]}>
           <View style={[styles.metricIconWrap, { backgroundColor: '#f3e8ff' }]}>
             <MaterialCommunityIcons name="account-group" size={20} color="#7c3aed" />
           </View>
@@ -78,7 +84,7 @@ export default function AdminDashboardMain({ activeTab, onNavigate }) {
           </View>
         </View>
 
-        <View style={[styles.metricCard, { borderLeftColor: '#0284c7' }]}>
+        <View style={[styles.metricCard, { borderTopColor: '#0284c7' }]}>
           <View style={[styles.metricIconWrap, { backgroundColor: '#e0f2fe' }]}>
             <MaterialCommunityIcons name="lightning-bolt" size={20} color="#0284c7" />
           </View>
@@ -88,7 +94,7 @@ export default function AdminDashboardMain({ activeTab, onNavigate }) {
           </View>
         </View>
 
-        <View style={[styles.metricCard, { borderLeftColor: '#10b981' }]}>
+        <View style={[styles.metricCard, { borderTopColor: '#10b981' }]}>
           <View style={[styles.metricIconWrap, { backgroundColor: '#dcfce7' }]}>
             <MaterialCommunityIcons name="certificate" size={20} color="#10b981" />
           </View>
@@ -98,48 +104,12 @@ export default function AdminDashboardMain({ activeTab, onNavigate }) {
           </View>
         </View>
       </View>
-
-      {/* Active Tab State or Quick Action Shortcuts */}
-      {activeTab && activeTab !== 'dashboard' ? (
-        <View style={styles.activeViewCard}>
-          <View style={styles.activeCardHeader}>
-            <MaterialCommunityIcons name="folder-open-outline" size={18} color="#0284c7" />
-            <Text style={styles.activeViewTitle}>Active Module: {activeTab.replace('_', ' ').toUpperCase()}</Text>
-          </View>
-          <Text style={styles.activeViewBody}>
-            Management controls and operational live sync are active for this partition. Select another section from the menu anytime.
-          </Text>
-        </View>
-      ) : (
-        <View style={styles.quickSection}>
-          <Text style={styles.sectionTitle}>Quick Center Management</Text>
-          <View style={styles.quickGrid}>
-            <TouchableOpacity style={styles.quickActionBox} onPress={() => onNavigate && onNavigate('student_management')}>
-              <MaterialCommunityIcons name="account-search" size={22} color="#7c3aed" />
-              <Text style={styles.quickActionText}>Directory</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.quickActionBox} onPress={() => onNavigate && onNavigate('new_admission')}>
-              <MaterialCommunityIcons name="account-plus" size={22} color="#10b981" />
-              <Text style={styles.quickActionText}>Admission</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.quickActionBox} onPress={() => onNavigate && onNavigate('fees_management')}>
-              <MaterialCommunityIcons name="currency-inr" size={22} color="#f59e0b" />
-              <Text style={styles.quickActionText}>Fee Dues</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-
-      {/* Real-time Recent Registrations List */}
+      
+      {/* Modern Recent Registrations List */}
       <View style={styles.recentSection}>
         <View style={styles.recentHeaderRow}>
           <Text style={styles.sectionTitle}>Recent Registrations</Text>
-          <View style={styles.liveIndicator}>
-            <View style={styles.liveDot} />
-            <Text style={styles.liveText}>Live Sync</Text>
-          </View>
+          <Text style={styles.seeAllText}>Live Feed</Text>
         </View>
 
         {loading ? (
@@ -150,34 +120,25 @@ export default function AdminDashboardMain({ activeTab, onNavigate }) {
         ) : recentStudents.length > 0 ? (
           recentStudents.map((student, index) => {
             const studentName = student.name || student.fullName || 'Unnamed Student';
-            const studentPhoto = student.photoUrl;
+            const studentPhoto = student.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(studentName)}&background=random&length=2`;
 
             return (
-              <TouchableOpacity 
-                key={student.id || index} 
-                style={styles.studentRow} 
-                activeOpacity={0.7}
-                onPress={() => handleStudentPress(student)}
-              >
-                {studentPhoto ? (
+              <View key={student.id || index} style={styles.studentRow}>
+                <TouchableOpacity onPress={() => handleStudentPress(student)} activeOpacity={0.8}>
                   <Image source={{ uri: studentPhoto }} style={styles.studentAvatarImg} />
-                ) : (
-                  <View style={styles.studentAvatarBox}>
-                    <Text style={styles.studentInitial}>{studentName.charAt(0).toUpperCase()}</Text>
-                  </View>
-                )}
+                </TouchableOpacity>
 
-                <View style={{ flex: 1, marginLeft: 12 }}>
+                <TouchableOpacity style={{ flex: 1, marginLeft: 12 }} activeOpacity={0.8} onPress={() => handleStudentPress(student)}>
                   <Text style={styles.studentName} numberOfLines={1}>{studentName}</Text>
                   <Text style={styles.studentCourse} numberOfLines={1}>
                     {student.course || 'Course Not Assigned'} • <Text style={{ color: '#0284c7' }}>{student.branch || 'Main'}</Text>
                   </Text>
-                </View>
+                </TouchableOpacity>
 
                 <View style={styles.statusPill}>
                   <Text style={styles.statusText}>{student.status || 'Active'}</Text>
                 </View>
-              </TouchableOpacity>
+              </View>
             );
           })
         ) : (
@@ -193,22 +154,27 @@ export default function AdminDashboardMain({ activeTab, onNavigate }) {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
     backgroundColor: '#f8fafc',
     flex: 1,
   },
   welcomeBanner: {
-    backgroundColor: '#ffffff', // Light clean surface
-    borderRadius: 20,
-    padding: 22,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 18,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#e2e8f0',
     elevation: 2,
     shadowColor: '#64748b',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  bannerHeaderTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   bannerBadge: {
     flexDirection: 'row',
@@ -217,9 +183,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0f2fe',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-    marginBottom: 10,
+    borderRadius: 6,
   },
   bannerBadgeText: {
     color: '#0284c7',
@@ -228,8 +192,24 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
+  liveBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10b981',
+  },
+  liveBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#059669',
+  },
   bannerTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '900',
     color: '#0f172a',
     letterSpacing: 0.2,
@@ -243,25 +223,25 @@ const styles = StyleSheet.create({
   },
   metricsGrid: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
     marginBottom: 16,
   },
   metricCard: {
     flex: 1,
     backgroundColor: '#ffffff',
-    padding: 10,
+    padding: 12,
     borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    borderLeftWidth: 4,
+    gap: 10,
+    borderTopWidth: 3,
     borderWidth: 1,
     borderColor: '#e2e8f0',
     elevation: 1,
   },
   metricIconWrap: {
-    width: 34,
-    height: 34,
+    width: 36,
+    height: 36,
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
@@ -308,13 +288,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
     color: '#0f172a',
-    marginBottom: 8,
+    marginBottom: 10,
     textTransform: 'uppercase',
     letterSpacing: 0.3,
   },
   quickGrid: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
   },
   quickActionBox: {
     flex: 1,
@@ -327,11 +307,18 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
     elevation: 1,
   },
+  quickIconBg: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
   quickActionText: {
     fontSize: 10,
     fontWeight: '800',
     color: '#334155',
-    marginTop: 6,
     textAlign: 'center',
   },
   recentSection: {
@@ -347,25 +334,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  liveIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  liveDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#10b981',
-  },
-  liveText: {
+  seeAllText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#059669',
+    color: '#0284c7',
   },
   studentRow: {
     flexDirection: 'row',
@@ -374,24 +346,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
-  studentAvatarBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#e0f2fe',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   studentAvatarImg: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#e2e8f0',
-  },
-  studentInitial: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#0284c7',
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#f1f5f9',
   },
   studentName: {
     fontSize: 13,
@@ -417,7 +378,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   emptyBox: {
-    padding: 20,
+    padding: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },

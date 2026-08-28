@@ -7,6 +7,9 @@ import AdminSidebar from './Sidebar';
 import AdminDashboardContent from './Dashboard';
 import AdminProfileContent from './Profile';
 import StudentManagement from './studentManagement/StudentManagement';
+import StudentProfile from './studentManagement/StudentProfile';
+import AdmissionProvider from './studentManagement/AdmissionProvider'; 
+import AdaptiveAdminQueries from './Queries/AdaptiveAdminQueries'; // 👈 Admin Inbox Queries import
 import Logout from '../../auth/Logout';
 
 const { width } = Dimensions.get('window');
@@ -15,42 +18,86 @@ const isDesktopWeb = width > 768;
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(isDesktopWeb);
+  const [studentRouteParams, setStudentRouteParams] = useState(null);
+
+  const handleNavigate = (screenName, params) => {
+    if (screenName === 'StudentProfile') {
+      setStudentRouteParams(params);
+      setActiveTab('StudentProfile');
+    } else {
+      setStudentRouteParams(null);
+      setActiveTab(screenName);
+    }
+  };
 
   const renderContent = () => {
+    if (activeTab === 'StudentProfile') {
+      return (
+        <AdmissionProvider>
+          <StudentProfile 
+            route={{ params: studentRouteParams }} 
+            navigation={{ goBack: () => setActiveTab('dashboard') }} 
+          />
+        </AdmissionProvider>
+      );
+    }
+
     switch (activeTab) {
       case 'admitted':
-        return <StudentManagement viewMode="admitted" />;
+        return (
+          <AdmissionProvider>
+            <StudentManagement viewMode="admitted" />
+          </AdmissionProvider>
+        );
       case 'new_adm':
-        return <StudentManagement viewMode="new_adm" />;
+        return (
+          <AdmissionProvider>
+            <StudentManagement viewMode="new_adm" />
+          </AdmissionProvider>
+        );
+      case 'queries': // 👈 Admin Inbox Queries Case Added
+        return <AdaptiveAdminQueries />;
       case 'profile':
       case 'admin_list':
       case 'admin_profile':
         return <AdminProfileContent />;
       default:
-        return <AdminDashboardContent activeTab={activeTab} />;
+        return (
+          <AdmissionProvider>
+            <AdminDashboardContent activeTab={activeTab} onNavigate={handleNavigate} />
+          </AdmissionProvider>
+        );
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Native Android Top Header / App Bar */}
       <View style={styles.headerBar}>
         <View style={styles.headerLeft}>
           <TouchableOpacity 
-            onPress={() => setSidebarOpen(!sidebarOpen)} 
+            onPress={() => {
+              if (activeTab === 'StudentProfile') {
+                setActiveTab('dashboard');
+              } else {
+                setSidebarOpen(!sidebarOpen);
+              }
+            }} 
             style={styles.menuToggleBtn} 
             activeOpacity={0.7}
           >
-            {/* Conditional Icon: Sidebar khula hone par 'close', band hone par 'menu' */}
             <MaterialIcons 
-              name={sidebarOpen && !isDesktopWeb ? "close" : "menu"} 
-              size={26} 
-              color="#071e3d" 
+              name={activeTab === 'StudentProfile' ? "arrow-back" : (sidebarOpen && !isDesktopWeb ? "close" : "menu")} 
+              size={24} 
+              color="#0f172a" 
             />
           </TouchableOpacity>
           <View style={styles.titleRow}>
-            <MaterialCommunityIcons name="shield-account" size={22} color="#0284c7" />
-            <Text style={styles.headerTitle}>Admin Console</Text>
+            <View style={styles.headerIconWrapper}>
+              <MaterialCommunityIcons name="shield-account" size={18} color="#0284c7" />
+            </View>
+            <Text style={styles.headerTitle}>
+              {activeTab === 'StudentProfile' ? "Student Profile" : activeTab === 'queries' ? "Query Inbox" : "Admin Console"}
+            </Text>
           </View>
         </View>
         <Logout />
@@ -59,7 +106,10 @@ export default function AdminDashboard() {
       <View style={styles.mainLayout}>
         <AdminSidebar 
           activeTab={activeTab} 
-          setActiveTab={setActiveTab} 
+          setActiveTab={(tab) => {
+            setStudentRouteParams(null);
+            setActiveTab(tab);
+          }} 
           sidebarOpen={sidebarOpen} 
           setSidebarOpen={setSidebarOpen} 
           isDesktopWeb={isDesktopWeb} 
@@ -87,10 +137,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: '#64748b',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowRadius: 6,
     zIndex: 10,
   },
   headerLeft: {
@@ -99,18 +149,32 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   menuToggleBtn: {
-    padding: 4,
-    borderRadius: 8,
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
+  },
+  headerIconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#e0f2fe',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
-    color: '#071e3d',
+    color: '#0f172a',
     letterSpacing: 0.3,
   },
   mainLayout: {
