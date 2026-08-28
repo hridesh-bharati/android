@@ -16,45 +16,120 @@ export default function FeePage({ route }) {
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!email) {
-      setLoading(false);
-      return;
-    }
-    const emailId = email.toLowerCase().trim();
+ useEffect(() => {
+  if (!email) {
+    setLoading(false);
+    return;
+  }
 
-    const fetchStudent = async () => {
-      try {
-        const sDoc = await getDoc(doc(db, "admissions", emailId));
-        if (sDoc.exists()) {
-          setStudent({ id: sDoc.id, ...sDoc.data() });
-        }
-      } catch (err) { 
-        console.error("Student Fetch Error:", err); 
+  const emailId = String(email).toLowerCase().trim();
+
+  let fallbackUnsub = null;
+
+  const fetchStudent = async () => {
+    try {
+      const sDoc = await getDoc(
+        doc(db, "admissions", emailId)
+      );
+
+      if (sDoc.exists()) {
+        setStudent({
+          id: sDoc.id,
+          ...sDoc.data(),
+        });
+      } else {
+        setStudent(null);
       }
-    };
+    } catch (err) {
+      console.error(
+        "Student Fetch Error:",
+        err
+      );
+    }
+  };
 
-    const q = query(
-      collection(db, "admissions", emailId, "payments"),
-      orderBy("createdAt", "desc")
-    );
+  const paymentsRef = collection(
+    db,
+    "admissions",
+    emailId,
+    "payments"
+  );
 
-    const unsub = onSnapshot(q, (snap) => {
-      setPayments(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  const orderedQuery = query(
+    paymentsRef,
+    orderBy("createdAt", "desc")
+  );
+
+  const unsub = onSnapshot(
+    orderedQuery,
+    (snap) => {
+      const list = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }));
+
+      setPayments(list);
       setLoading(false);
-    }, () => {
-      const fallbackQuery = query(collection(db, "admissions", emailId, "payments"));
-      onSnapshot(fallbackQuery, (fallbackSnap) => {
-        const list = fallbackSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        list.reverse();
-        setPayments(list);
-        setLoading(false);
-      });
-    });
+    },
 
-    fetchStudent();
-    return () => unsub();
-  }, [email]);
+    (error) => {
+      console.warn(
+        "Ordered payment query failed:",
+        error
+      );
+
+      // Fallback without orderBy
+      const fallbackQuery = query(
+        paymentsRef
+      );
+
+      fallbackUnsub = onSnapshot(
+        fallbackQuery,
+        (fallbackSnap) => {
+          const list =
+            fallbackSnap.docs.map((d) => ({
+              id: d.id,
+              ...d.data(),
+            }));
+
+          // Latest first
+          list.sort((a, b) => {
+            const aTime =
+              a.createdAt?.seconds || 0;
+
+            const bTime =
+              b.createdAt?.seconds || 0;
+
+            return bTime - aTime;
+          });
+
+          setPayments(list);
+          setLoading(false);
+        },
+
+        (fallbackError) => {
+          console.error(
+            "Payment listener error:",
+            fallbackError
+          );
+
+          setLoading(false);
+        }
+      );
+    }
+  );
+
+  fetchStudent();
+
+  return () => {
+    unsub();
+
+    if (fallbackUnsub) {
+      fallbackUnsub();
+    }
+  };
+
+}, [email]);
 
   if (loading) {
     return (

@@ -67,6 +67,25 @@ export default function StudentProfile({ route, navigation }) {
     );
   }
 
+  const renderField = (label, key, iconName, keyboardType = "default") => (
+    <View style={styles.infoRow}>
+      <View style={styles.infoLabelContainer}>
+        <MaterialIcons name={iconName} size={14} color="#64748b" style={{ marginRight: 6 }} />
+        <Text style={styles.infoLabel}>{label}</Text>
+      </View>
+      {isEditing ? (
+        <TextInput 
+          style={styles.inputEdit} 
+          value={formData[key] || ""} 
+          onChangeText={(val) => handleChange(key, val)} 
+          keyboardType={keyboardType}
+        />
+      ) : (
+        <Text style={styles.infoValue}>{safe(formData[key])}</Text>
+      )}
+    </View>
+  );
+
   return (
     <View style={styles.mainContainer}>
       {/* Background Gradient Orbs for Glassmorphism Effect */}
@@ -141,54 +160,52 @@ export default function StudentProfile({ route, navigation }) {
         {/* Personal Info Box (Glassmorphism) */}
         <View style={styles.glassSectionBox}>
           <Text style={styles.sectionTitle}><MaterialIcons name="person" size={14} color="#a855f7" /> PERSONAL DETAILS</Text>
-          {[
-            { label: "Branch", key: "branch" },
-            { label: "Course", key: "course" },
-            { label: "Full Name", key: "name" },
-            { label: "Father's Name", key: "fatherName" },
-            { label: "Mother's Name", key: "motherName" },
-            { label: "Mobile", key: "mobile" },
-            { label: "Email", key: "email" },
-            { label: "Gender", key: "gender" },
-            { label: "Date of Birth", key: "dob" },
-            { label: "Aadhar", key: "aadharNo" },
-          ].map((item) => (
-            <View key={item.key} style={styles.infoRow}>
-              <Text style={styles.infoLabel}>{item.label}</Text>
-              {isEditing ? (
-                <TextInput 
-                  style={styles.inputEdit} 
-                  value={formData[item.key] || ""} 
-                  onChangeText={(val) => handleChange(item.key, val)} 
-                />
-              ) : (
-                <Text style={styles.infoValue}>{safe(formData[item.key])}</Text>
-              )}
-            </View>
-          ))}
+          {renderField("Branch", "branch", "store")}
+          {renderField("Course", "course", "menu-book")}
+          {renderField("Full Name", "name", "badge")}
+          {renderField("Father's Name", "fatherName", "face")}
+          {renderField("Mother's Name", "motherName", "face")}
+          {renderField("Mobile", "mobile", "phone", "phone-pad")}
+          {renderField("Email", "email", "email", "email-address")}
+          {renderField("Gender", "gender", "wc")}
+          {renderField("Date of Birth", "dob", "cake")}
+          {renderField("Aadhar", "aadharNo", "fingerprint", "numeric")}
         </View>
 
         {/* Communication Address Box (Glassmorphism) */}
         <View style={[styles.glassSectionBox, { marginTop: 16 }]}>
           <Text style={styles.sectionTitle}><MaterialIcons name="location-on" size={14} color="#a855f7" /> COMMUNICATION ADDRESS</Text>
           <View style={styles.addressGrid}>
-            {["village", "post", "thana", "city", "state", "pincode"].map((k) => (
-              <View key={k} style={styles.addressField}>
-                <Text style={styles.infoLabel}>{k.toUpperCase()}</Text>
+            {[
+              { label: "VILLAGE", key: "village", icon: "home" },
+              { label: "POST", key: "post", icon: "local-post-office" },
+              { label: "THANA", key: "thana", icon: "security" },
+              { label: "CITY", key: "city", icon: "location-city" },
+              { label: "STATE", key: "state", icon: "map" },
+              { label: "PINCODE", key: "pincode", icon: "pin-drop" },
+            ].map((addr) => (
+              <View key={addr.key} style={styles.addressField}>
+                <View style={styles.infoLabelContainer}>
+                  <MaterialIcons name={addr.icon} size={13} color="#64748b" style={{ marginRight: 4 }} />
+                  <Text style={styles.infoLabel}>{addr.label}</Text>
+                </View>
                 {isEditing ? (
                   <TextInput 
                     style={styles.inputEdit} 
-                    value={formData[k] || ""} 
-                    onChangeText={(val) => handleChange(k, val)} 
+                    value={formData[addr.key] || ""} 
+                    onChangeText={(val) => handleChange(addr.key, val)} 
                   />
                 ) : (
-                  <Text style={styles.infoValue} numberOfLines={1}>{safe(formData[k])}</Text>
+                  <Text style={styles.infoValue} numberOfLines={1}>{safe(formData[addr.key])}</Text>
                 )}
               </View>
             ))}
           </View>
           <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(226, 232, 240, 0.6)', paddingTop: 8 }}>
-            <Text style={styles.infoLabel}>FULL ADDRESS STRING</Text>
+            <View style={styles.infoLabelContainer}>
+              <MaterialIcons name="description" size={13} color="#64748b" style={{ marginRight: 4 }} />
+              <Text style={styles.infoLabel}>FULL ADDRESS STRING</Text>
+            </View>
             {isEditing ? (
               <TextInput 
                 style={[styles.inputEdit, { height: 60, textAlignVertical: 'top', paddingTop: 6 }]} 
@@ -310,9 +327,10 @@ const styles = StyleSheet.create({
   glassSectionBox: { backgroundColor: "rgba(255, 255, 255, 0.75)", borderRadius: 20, padding: 16, borderWidth: 1.5, borderColor: "rgba(255, 255, 255, 0.95)", elevation: 4 },
   sectionTitle: { fontSize: 11, fontWeight: "800", color: "#a855f7", marginBottom: 12 },
   infoRow: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(226, 232, 240, 0.6)' },
+  infoLabelContainer: { flexDirection: 'row', alignItems: 'center' },
   infoLabel: { fontSize: 9, fontWeight: "700", color: "#64748b", textTransform: "uppercase" },
-  infoValue: { fontSize: 12, fontWeight: "700", color: "#1e293b", marginTop: 2 },
-  inputEdit: { backgroundColor: "rgba(255, 255, 255, 0.9)", borderWidth: 1, borderColor: "#cbd5e1", borderRadius: 8, paddingHorizontal: 10, height: 36, fontSize: 12, color: "#1e293b", marginTop: 2 },
+  infoValue: { fontSize: 12, fontWeight: "700", color: "#1e293b", marginTop: 2, marginLeft: 20 },
+  inputEdit: { backgroundColor: "rgba(255, 255, 255, 0.9)", borderWidth: 1, borderColor: "#cbd5e1", borderRadius: 8, paddingHorizontal: 10, height: 36, fontSize: 12, color: "#1e293b", marginTop: 2, marginLeft: 20 },
   addressGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   addressField: { width: '48%' },
   shieldIcon: { width: 38, height: 38, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 12 },

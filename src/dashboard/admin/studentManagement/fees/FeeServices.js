@@ -1,6 +1,7 @@
 // src/dashboard/admin/studentManagement/fees/FeeServices.js
 import { db } from "../../../../services/firebase";
 import { collection, addDoc, serverTimestamp, doc, deleteDoc } from "firebase/firestore";
+import { Alert } from "react-native";
 
 export const COURSE_CONFIG = {
   "ADCA+": { duration: 18, monthly: 800, adm: 600 },
@@ -21,7 +22,7 @@ export const getFeeLogic = (courseName, payments = []) => {
 
 export const addPayment = async (studentEmail, data) => {
   if (!studentEmail) throw new Error("Student Email is required");
-  const emailId = studentEmail.toLowerCase().trim();
+  const emailId = String(studentEmail).toLowerCase().trim();
   await addDoc(collection(db, "admissions", emailId, "payments"), {
     ...data, 
     amount: Number(data.amount), 
@@ -29,12 +30,19 @@ export const addPayment = async (studentEmail, data) => {
   });
 };
 
-export const deletePayment = async (studentEmail, pid) => {
-  if (!studentEmail || !pid) return;
+// Update this function in src/dashboard/admin/studentManagement/fees/FeeServices.js
+export const deletePayment = async (studentIdentifier, pid) => {
+  if (!studentIdentifier || !pid) {
+    throw new Error("Student Identifier or Payment ID is missing");
+  }
   try {
-    const emailId = studentEmail.toLowerCase().trim();
-    await deleteDoc(doc(db, "admissions", emailId, "payments", pid));
+    const studentKey = String(studentIdentifier).toLowerCase().trim();
+    
+    // Direct path delete
+    const paymentDocRef = doc(db, "admissions", studentKey, "payments", pid);
+    await deleteDoc(paymentDocRef);
   } catch (error) {
+    console.error("Delete payment error:", error);
     throw new Error("Failed to delete payment: " + error.message);
   }
 };

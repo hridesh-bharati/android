@@ -7,7 +7,7 @@ import { addPayment, COURSE_CONFIG } from "./FeeServices";
 export default function AddPaymentModal({ student, summary, payments = [], onPaymentAdded }) {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showCategoryModal, setShowCategoryModal] = useState(false); // Category dropdown modal state
+  const [showCategoryModal, setShowCategoryModal] = useState(false); 
   
   const [formData, setFormData] = useState({
     amount: 700,
