@@ -9,7 +9,7 @@ import AdminProfileContent from './Profile';
 import StudentManagement from './studentManagement/StudentManagement';
 import StudentProfile from './studentManagement/StudentProfile';
 import AdmissionProvider from './studentManagement/AdmissionProvider'; 
-import AdaptiveAdminQueries from './Queries/AdaptiveAdminQueries'; // 👈 Admin Inbox Queries import
+import AdaptiveAdminQueries from './Queries/AdaptiveAdminQueries'; 
 import Logout from '../../auth/Logout';
 
 const { width } = Dimensions.get('window');
