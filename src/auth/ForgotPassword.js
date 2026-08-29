@@ -1,12 +1,20 @@
 // src/auth/ForgotPassword.js
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Pressable, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { resetPassword } from '../firebase/auth';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
+const COLORS = {
+  background: "#F4F7FB",
+  primaryBlue: "#0284c7",
+  textDark: "#0F172A",
+  textSecondary: "#64748B",
+};
 
 export default function ForgotPassword({ navigation }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
 
   const handleReset = async () => {
     if (!email) {
@@ -27,54 +35,146 @@ export default function ForgotPassword({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <MaterialIcons name="lock-reset" size={48} color="#0284c7" />
-        <Text style={styles.title}>Reset Password</Text>
-        <Text style={styles.subtitle}>Enter your email to receive recovery link</Text>
-      </View>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"} 
+      style={styles.wrapper}
+    >
+      <View style={styles.blobShape} />
 
-      <View style={styles.form}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email Address</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your email"
-            placeholderTextColor="#94a3b8"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.headerContainer}>
+          <View style={styles.iconContainer}>
+            <MaterialIcons name="lock-reset" size={32} color={COLORS.primaryBlue} />
+          </View>
+          <Text style={styles.title}>Reset Password</Text>
+          <Text style={styles.subtitle}>Enter your email to receive recovery link</Text>
         </View>
 
-        <TouchableOpacity style={styles.btn} onPress={handleReset} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>Send Reset Link</Text>}
-        </TouchableOpacity>
+        <View style={styles.form}>
+          <View style={styles.inputWrapper}>
+            <Text style={[styles.floatingLabel, (focusedField === 'email' || email.length > 0) && styles.floatingLabelActive]}>
+              Email Address
+            </Text>
+            <View style={[styles.inputBox, focusedField === 'email' && styles.inputBoxFocused]}>
+              <MaterialIcons name="mail-outline" size={20} color={focusedField === 'email' ? COLORS.primaryBlue : COLORS.textSecondary} style={styles.prefixIcon} />
+              <TextInput
+                style={styles.textInput}
+                placeholder="Enter your email"
+                placeholderTextColor="#94A3B8"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail}
+                onFocus={() => setFocusedField('email')}
+                onBlur={() => setFocusedField(null)}
+              />
+            </View>
+          </View>
 
-        <View style={styles.switchRow}>
-          <Text style={styles.switchText}>Remembered your password? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.switchLink}>Login</Text>
-          </TouchableOpacity>
+          <Pressable 
+            style={({ pressed }) => [styles.submitButton, pressed && { opacity: 0.85 }]} 
+            onPress={handleReset} 
+            disabled={loading}
+          >
+            {loading ? <ActivityIndicator color="#FFFFFF" size="small" /> : <Text style={styles.submitButtonText}>Send Reset Link</Text>}
+          </Pressable>
+
+          <View style={styles.switchRow}>
+            <Text style={styles.switchText}>Remembered your password? </Text>
+            <Pressable onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.switchLink}>Login</Text>
+            </Pressable>
+          </View>
         </View>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc', justifyContent: 'center', paddingHorizontal: 20 },
-  headerContainer: { alignItems: 'center', marginBottom: 24 },
-  title: { fontSize: 20, fontWeight: '800', color: '#0f172a', marginTop: 10 },
-  subtitle: { fontSize: 13, color: '#64748b', marginTop: 4, textAlign: 'center' },
-  form: { backgroundColor: '#ffffff', padding: 20, borderRadius: 20, elevation: 3, gap: 14 },
-  inputGroup: { gap: 6 },
-  label: { fontSize: 12, fontWeight: '600', color: '#334155' },
-  input: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, color: '#0f172a' },
-  btn: { backgroundColor: '#0284c7', paddingVertical: 12, borderRadius: 10, alignItems: 'center', marginTop: 4 },
-  btnText: { color: '#ffffff', fontSize: 14, fontWeight: '700' },
+  wrapper: { flex: 1, backgroundColor: COLORS.background },
+  container: { flexGrow: 1, justifyContent: 'center', padding: 20 },
+  blobShape: {
+    position: "absolute",
+    top: -40,
+    right: -40,
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: "rgba(2, 132, 199, 0.12)",
+    zIndex: 0,
+  },
+  headerContainer: { alignItems: 'center', marginBottom: 24, zIndex: 1 },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.90)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "rgba(226, 232, 240, 0.8)",
+    shadowColor: COLORS.primaryBlue,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  title: { fontSize: 22, fontWeight: '800', color: COLORS.textDark, textAlign: 'center' },
+  subtitle: { fontSize: 13, color: COLORS.textSecondary, marginTop: 4, fontWeight: '500', textAlign: 'center' },
+  form: { 
+    backgroundColor: "rgba(255, 255, 255, 0.85)", 
+    padding: 20, 
+    borderRadius: 24, 
+    borderWidth: 1, 
+    borderColor: "rgba(255, 255, 255, 0.95)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3, 
+    gap: 14,
+    zIndex: 1
+  },
+  inputWrapper: { position: "relative" },
+  floatingLabel: { 
+    fontSize: 11, 
+    fontWeight: '700', 
+    color: COLORS.textSecondary, 
+    marginBottom: 4,
+    marginLeft: 4,
+    textTransform: "uppercase" 
+  },
+  floatingLabelActive: { color: COLORS.primaryBlue },
+  inputBox: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    backgroundColor: "#F8FAFC", 
+    borderWidth: 1, 
+    borderColor: "#CBD5E1", 
+    borderRadius: 14, 
+    paddingHorizontal: 12, 
+    height: 52 
+  },
+  inputBoxFocused: { borderColor: COLORS.primaryBlue, borderWidth: 1.5, backgroundColor: "#FFFFFF" },
+  prefixIcon: { marginRight: 10 },
+  textInput: { flex: 1, fontSize: 14, color: COLORS.textDark, height: "100%", fontWeight: "500" },
+  submitButton: { 
+    height: 52, 
+    backgroundColor: COLORS.primaryBlue, 
+    borderRadius: 14, 
+    justifyContent: "center", 
+    alignItems: "center",
+    shadowColor: COLORS.primaryBlue,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
+    marginTop: 4
+  },
+  submitButtonText: { color: "#FFFFFF", fontSize: 15, fontWeight: '800', letterSpacing: 0.5 },
   switchRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 4 },
-  switchText: { fontSize: 12, color: '#64748b' },
-  switchLink: { fontSize: 12, color: '#0284c7', fontWeight: '700' },
+  switchText: { fontSize: 12, color: COLORS.textSecondary, fontWeight: '500' },
+  switchLink: { fontSize: 12, color: COLORS.primaryBlue, fontWeight: '800' },
 });

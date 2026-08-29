@@ -1,6 +1,8 @@
+// src/components/WhyChooseDrishtee.js
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { COLORS, FONTS } from '../constants/theme';
 
 export default function WhyChooseDrishtee() {
   const features = [
@@ -12,7 +14,16 @@ export default function WhyChooseDrishtee() {
 
   return (
     <View style={styles.outerContainer}>
-      <Text style={styles.sectionTitle}>Why Choose Drishtee?</Text>
+      {/* Heading & Tagline moved here */}
+      <View style={styles.headerContainer}>
+        <Text style={styles.tagline}>
+          WHY CHOOSE <Text style={{ color: COLORS.danger }}>DRISHTEE</Text>
+        </Text>
+        <Text style={styles.title}>
+          Upgrade Your <Text style={{ color: COLORS.secondary }}>Skills</Text>
+        </Text>
+      </View>
+
       <View style={styles.whyBox}>
         {features.map((item, idx) => (
           <React.Fragment key={idx}>
@@ -36,11 +47,22 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 18,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#071e3d',
+  headerContainer: {
     marginBottom: 12,
+  },
+  tagline: {
+    fontSize: 10,
+    fontWeight: '800',
+    fontFamily: FONTS.bold,
+    color: COLORS.darkGray,
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '900',
+    fontFamily: FONTS.bold,
+    color: COLORS.darkGray,
   },
   whyBox: {
     backgroundColor: 'rgba(255, 255, 255, 0.85)',
@@ -74,6 +96,7 @@ const styles = StyleSheet.create({
   whyTitle: {
     fontSize: 10.5,
     fontWeight: '700',
+    fontFamily: FONTS.bold,
     color: '#071e3d',
     textAlign: 'center',
     marginBottom: 3,
@@ -81,6 +104,7 @@ const styles = StyleSheet.create({
   },
   whySub: {
     fontSize: 8.5,
+    fontFamily: FONTS.regular,
     color: '#64748b',
     textAlign: 'center',
     lineHeight: 11,

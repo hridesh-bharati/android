@@ -3,12 +3,16 @@ import { StyleSheet, View, ScrollView } from 'react-native';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
 import PopularCourses from '../components/PopularCourses';
+import RecentStudents from '../components/RecentStudents';
 import QuiceServices from './QuiceServices';
 import WhyChooseDrishtee from '../components/WhyChooseDrishtee';
 import LetestNotice from '../components/LetestNotice';
 import StudentTestimonials from '../components/StudentTestimonials';
 import QuickInquiryWidget from '../components/QuickInquiryModal';
+import CardSlider from '../components/CardSlider';
 import DirectorMessage from '../components/DirectorMessage';
+import UpgradeSkills from '../components/UpgradeSkills';
+import JoinBatchBanner from '../components/JoinBatchBanner';
 
 export default function HomeScreen() {
   return (
@@ -17,13 +21,17 @@ export default function HomeScreen() {
         <Header />
         <Hero />
         <PopularCourses />
+        <RecentStudents />
+        <LetestNotice />
         <QuiceServices />
         <WhyChooseDrishtee />
-        <LetestNotice />
+        <UpgradeSkills />
         <StudentTestimonials />
         <QuickInquiryWidget />
+        <JoinBatchBanner />
+        <CardSlider />
         <DirectorMessage />
-         <View style={{ height: 100 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
     </View>
   );

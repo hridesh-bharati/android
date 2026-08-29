@@ -1,3 +1,4 @@
+// src/navigation/AppNavigator.js
 import React, { useContext } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -28,11 +29,16 @@ import StudentDashboard from '../dashboard/student/StudentDashboard';
 // Fee Management Screen
 import FeePage from '../dashboard/admin/studentManagement/fees/FeePage';
 
-// Student Profile
+// Student Profile & Provider
 import StudentProfile from '../dashboard/admin/studentManagement/StudentProfile';
+import AdmissionProvider from '../dashboard/admin/studentManagement/AdmissionProvider';
 
 // Queries / Contact Us Form Component
 import QueriesForm from '../components/QueriesForm';
+
+
+import TeamScreen from '../screens/TeamScreen';
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -148,8 +154,17 @@ export default function AppNavigator() {
         <Stack.Screen name="AdminPanel" component={AdminDashboard} />
         <Stack.Screen name="StudentPanel" component={StudentDashboard} />
         <Stack.Screen name="FeePage" component={FeePage} />
-        <Stack.Screen name="StudentProfile" component={StudentProfile} />
-        {/* Registered Contact Us / Queries Form Route */}
+        <Stack.Screen name="TeamScreen" component={TeamScreen} />
+        
+        {/* StudentProfile wrapped with AdmissionProvider to fix context error */}
+        <Stack.Screen name="StudentProfile">
+          {props => (
+            <AdmissionProvider>
+              <StudentProfile {...props} />
+            </AdmissionProvider>
+          )}
+        </Stack.Screen>
+
         <Stack.Screen name="ContactUs" component={QueriesForm} />
       </Stack.Navigator>
     </NavigationContainer>

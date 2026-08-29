@@ -1,18 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Modal, ScrollView, Dimensions, Platform } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '../constants/theme';
+import { AuthContext } from '../context/AuthContext';
+import { CommonActions } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
 export default function Header() {
   const navigation = useNavigation();
   const [sidebarVisible, setSidebarVisible] = useState(false);
+  const { user, logout } = useContext(AuthContext);
 
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
+  };
+
+  const handleLogout = async () => {
+    try {
+      if (logout) {
+        await logout();
+      }
+      toggleSidebar();
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'MainTabs', state: { routes: [{ name: 'Home' }] } }],
+        })
+      );
+    } catch (error) {
+      console.log('Logout error:', error);
+    }
   };
 
   return (
@@ -20,10 +40,10 @@ export default function Header() {
       <View style={styles.header}>
         {/* Left: Logo & Title with Subtitle */}
         <View style={styles.headerLeft}>
-          <Image 
-            source={require('../../assets/logo.png')} 
-            style={styles.logo} 
-            resizeMode="contain" 
+          <Image
+            source={require('../../assets/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
           />
           <View style={styles.titleContainer}>
             <Text style={styles.brandTitle}>DRISHTEE</Text>
@@ -34,10 +54,10 @@ export default function Header() {
         {/* Middle: Clean Single Bounded Search Box */}
         <View style={styles.searchContainer}>
           <MaterialIcons name="search" size={16} color="#94a3b8" style={styles.searchIcon} />
-          <TextInput 
-            placeholder="Search..." 
-            placeholderTextColor="#94a3b8" 
-            style={styles.searchInput} 
+          <TextInput
+            placeholder="Search..."
+            placeholderTextColor="#94a3b8"
+            style={styles.searchInput}
           />
         </View>
 
@@ -67,16 +87,16 @@ export default function Header() {
           <TouchableOpacity style={styles.backdropTouch} activeOpacity={1} onPress={toggleSidebar} />
 
           <View style={styles.sidebarContainer}>
-            
-            {/* User Profile Banner at Top */}
+
+            {/* Dynamic User Profile Banner at Top */}
             <View style={styles.profileHeader}>
               <TouchableOpacity onPress={toggleSidebar} style={styles.closeTouch} activeOpacity={0.7}>
                 <MaterialIcons name="close" size={20} color="#64748b" />
               </TouchableOpacity>
               <View style={styles.profileInfoRow}>
                 <View style={styles.profileTextContainer}>
-                  <Text style={styles.userName}>Rohit Sharma</Text>
-                  <Text style={styles.userSubText}>Student ID: DR12345</Text>
+                  <Text style={styles.userName}>{user?.name || user?.displayName || 'Welcome User'}</Text>
+                  <Text style={styles.userSubText}>{user?.email || 'Guest Account'}</Text>
                 </View>
                 <Image source={require('../../assets/logo.png')} style={styles.userAvatar} />
               </View>
@@ -84,7 +104,7 @@ export default function Header() {
 
             {/* Scrollable Navigation List with Sections */}
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sidebarScroll}>
-              
+
               <Text style={styles.sectionHeaderLabel}>Main Navigation</Text>
               <SidebarItem icon="home" label="Home" onPress={() => { toggleSidebar(); navigation.navigate('MainTabs', { screen: 'Home' }); }} />
               <SidebarItem icon="menu-book" label="Courses" onPress={() => { toggleSidebar(); navigation.navigate('MainTabs', { screen: 'Courses' }); }} />
@@ -97,16 +117,23 @@ export default function Header() {
               <SidebarItem icon="book-open-page-variant" label="Study Material" iconType="community" />
               <SidebarItem icon="perm-media" label="Gallery" />
 
+              <Text style={styles.sectionHeaderLabel}>Our Team</Text>
+              <SidebarItem icon="account-group" iconType="community" label="Our Team" onPress={() => { toggleSidebar(); navigation.navigate('TeamScreen'); }}/>
+
               <Text style={styles.sectionHeaderLabel}>Services & Support</Text>
               <SidebarItem icon="payment" label="Fee Payment" onPress={() => { toggleSidebar(); navigation.navigate('FeePage'); }} />
               <SidebarItem icon="file-document-edit-outline" label="Online Admission" iconType="community" onPress={() => { toggleSidebar(); navigation.navigate('MainTabs', { screen: 'Admission' }); }} />
-              
-              {/* Contact Us Route Added Here */}
+
               <SidebarItem icon="headset-mic" label="Contact Us" onPress={() => { toggleSidebar(); navigation.navigate('ContactUs'); }} />
-              
+
               <SidebarItem icon="settings" label="Settings" />
               <SidebarItem icon="help-outline" label="Help & Support" onPress={() => { toggleSidebar(); navigation.navigate('ContactUs'); }} />
-              <SidebarItem icon="logout" label="Logout" color="#ef4444" />
+              
+              {user ? (
+                <SidebarItem icon="logout" label="Logout" color="#ef4444" onPress={handleLogout} />
+              ) : (
+                <SidebarItem icon="login" label="Login" color="#0284c7" onPress={() => { toggleSidebar(); navigation.navigate('Login'); }} />
+              )}
 
               <View style={styles.sidebarFooter}>
                 <Text style={styles.footerText}>Version 1.0.0</Text>
@@ -194,12 +221,12 @@ const styles = StyleSheet.create({
       android: { textAlignVertical: 'center', includeFontPadding: false },
     }),
   },
-  headerRight: { 
-    flexDirection: 'row', 
+  headerRight: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  bellContainer: { 
-    position: 'relative', 
+  bellContainer: {
+    position: 'relative',
     marginRight: 10,
     padding: 2,
   },
@@ -214,9 +241,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  badgeText: { 
-    color: '#fff', 
-    fontSize: 7, 
+  badgeText: {
+    color: '#fff',
+    fontSize: 7,
     fontWeight: 'bold',
   },
   menuTouch: {
@@ -325,7 +352,7 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     fontSize: 11,
   },
-  backdropTouch: {
+    backdropTouch: {
     flex: 1,
   },
 });
