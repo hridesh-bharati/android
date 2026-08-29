@@ -14,7 +14,6 @@ export default function Logout() {
       if (logout) {
         await logout();
       }
-      // Reset navigation stack to Home screen (MainTabs -> Home)
       navigation.dispatch(
         CommonActions.reset({
           index: 0,

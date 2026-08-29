@@ -1,4 +1,4 @@
-// src/dashboard/admin/studentManagement/AdmissionProvider.js
+// src/dashboard/admin/studentManagement/AdmissionProvider.js react natic code 
 import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { collection, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../../services/firebase";
@@ -52,27 +52,22 @@ export default function AdmissionProvider({ children }) {
     }
   };
 
-  const deleteAdmission = async (id) => {
-    Alert.alert(
-      "Confirm Delete",
-      "Are you sure you want to delete this student?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Delete", 
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await deleteDoc(doc(db, "admissions", id));
-              Alert.alert("Success", "Student record deleted");
-            } catch (err) {
-              Alert.alert("Error", "Delete failed");
-            }
-          }
-        }
-      ]
-    );
-  };
+const deleteAdmission = async (id) => {
+  if (!id) {
+    console.error("Delete failed: No ID provided");
+    return;
+  }
+  
+  try {
+    console.log("Deleting student with ID:", id);
+    const docRef = doc(db, "admissions", id);
+    await deleteDoc(docRef);
+    console.log("Student deleted successfully");
+  } catch (err) {
+    console.error("Delete Error:", err);
+    throw err;
+  }
+};
 
   const value = useMemo(() => ({
     admissions,

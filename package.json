@@ -13,6 +13,8 @@
     "babel-plugin-inline-dotenv": "^1.7.0",
     "expo": "~57.0.17",
     "expo-image-picker": "~57.0.14",
+    "expo-print": "~57.0.1",
+    "expo-sharing": "~57.0.16",
     "expo-status-bar": "~57.0.1",
     "firebase": "^12.18.0",
     "react": "19.2.3",

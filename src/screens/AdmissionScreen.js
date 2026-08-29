@@ -77,11 +77,11 @@ export default function AdmissionScreen() {
   const [autoAddress, setAutoAddress] = useState(false);
   const [photoUri, setPhotoUri] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [activeDropdown, setActiveDropdown] = useState(null); // 'branch', 'course', 'gender', 'category'
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
   // Native Date Picker States
   const [showPicker, setShowPicker] = useState(false);
-  const [pickerMode, setPickerMode] = useState('admissionDate'); // 'admissionDate' or 'dob'
+  const [pickerMode, setPickerMode] = useState('admissionDate');
   const [tempDate, setTempDate] = useState(new Date());
 
   const [loading, setLoading] = useState(false);
@@ -285,7 +285,7 @@ export default function AdmissionScreen() {
   // ===================== SUCCESS / RECEIPT VIEW =====================
   if (isSubmitted && submittedData) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
+      <ScrollView style={styles.container} contentContainerStyle={{ padding: 2 }}>
         <View style={styles.receiptBox}>
           <View style={styles.receiptHeader}>
             <Text style={styles.receiptMainTitle}>DRISHTEE COMPUTER CENTER</Text>
@@ -342,8 +342,13 @@ export default function AdmissionScreen() {
 
   // ===================== FORM VIEW =====================
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
-      {/* App Styled Header Banner */}
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60, paddingHorizontal: 2 }}>
+      {/* Background Glowing Orbs */}
+      <View style={styles.bgGlowOrbTopLeft} />
+      <View style={styles.bgGlowOrbBottomRight} />
+      <View style={styles.bgGlowOrbCenter} />
+
+      {/* Streamlined Compact Header Banner with Dual-Tone Gradient Simulated Look */}
       <View style={styles.headerBanner}>
         <View style={styles.headerGlowOverlay} />
         <View style={styles.logoBadge}>
@@ -360,413 +365,415 @@ export default function AdmissionScreen() {
         </View>
       </View>
 
-      {/* Photo Upload Section - TOP */}
-      <View style={styles.photoUploadSection}>
-        <View style={styles.photoUploadHeader}>
-          <View style={styles.headerIconContainer}>
-            <MaterialIcons name="image" size={18} color="#ffffff" />
+      {/* Glassmorphism Form Body Container */}
+      <View style={styles.formGlassCard}>
+        <View style={styles.formBody}>
+          
+          {/* SECTION I: STUDENT PHOTOGRAPH */}
+          <View style={[styles.sectionHeaderBox, { borderLeftColor: '#0EA5E9' }]}>
+            <View style={[styles.sectionIconBox, { backgroundColor: '#0EA5E915' }]}>
+              <MaterialIcons name="image" size={16} color="#0EA5E9" />
+            </View>
+            <Text style={styles.sectionHeaderText}>I. STUDENT PHOTOGRAPH</Text>
+            <View style={styles.sizeBadge}>
+              <Text style={styles.sizeBadgeText}>MAX 50KB</Text>
+            </View>
           </View>
-          <Text style={styles.photoUploadTitle}>STUDENT PHOTOGRAPH</Text>
-          <View style={styles.sizeBadge}>
-            <Text style={styles.sizeBadgeText}>MAX 50KB</Text>
-          </View>
-        </View>
 
-        <TouchableOpacity 
-          style={styles.photoUploadContainer}
-          onPress={openPicker}
-          activeOpacity={0.85}
-        >
-          <View style={styles.photoUploadBox}>
-            {photoUri ? (
-              <>
-                <Image source={{ uri: photoUri }} style={styles.photoPreview} />
-                {imgLoading ? (
-                  <View style={styles.photoUploadingOverlay}>
-                    <ActivityIndicator size="small" color="#ffffff" />
-                    <Text style={styles.progressText}>Uploading... {uploadProgress}%</Text>
-                    <View style={styles.progressBarBg}>
-                      <View style={[styles.progressBarFill, { width: `${uploadProgress}%` }]} />
-                    </View>
-                  </View>
-                ) : (
-                  <View style={styles.photoOverlay}>
-                    <MaterialIcons name="edit" size={24} color="#ffffff" />
-                    <Text style={styles.photoOverlayText}>Change Photo</Text>
-                  </View>
-                )}
-              </>
-            ) : (
-              <>
-                {imgLoading ? (
-                  <View style={{ alignItems: 'center' }}>
-                    <ActivityIndicator size="large" color={COLORS.primary} />
-                    <Text style={styles.progressTextDark}>Uploading... {uploadProgress}%</Text>
-                  </View>
-                ) : (
-                  <>
-                    <View style={styles.uploadIconContainer}>
-                      <MaterialIcons name="cloud-upload" size={50} color={COLORS.secondary} />
-                    </View>
-                    <Text style={styles.photoPlaceholderText}>Tap to upload photo</Text>
-                    <Text style={styles.photoSizeText}>JPG, PNG, GIF supported</Text>
-                  </>
-                )}
-              </>
-            )}
-          </View>
-        </TouchableOpacity>
-      </View>
-
-      {Platform.OS === 'web' && (
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileUpload}
-          style={styles.hiddenFileInput}
-          id="photo-upload"
-        />
-      )}
-
-      {/* Notice Banner */}
-      <View style={styles.noticeAlert}>
-        <MaterialIcons name="info-outline" size={16} color="#d97706" style={{ marginRight: 6 }} />
-        <Text style={styles.noticeAlertText}>
-          PLEASE UPLOAD YOUR PHOTOGRAPH AS THE FIRST STEP OF ADMISSION
-        </Text>
-      </View>
-
-      <View style={styles.formBody}>
-        {/* SECTION I: CENTER & COURSE SELECTION */}
-        <View style={[styles.sectionHeaderBox, { borderLeftColor: '#ef4444' }]}>
-          <View style={[styles.sectionIconBox, { backgroundColor: '#ef444415' }]}>
-            <MaterialIcons name="domain" size={16} color="#ef4444" />
-          </View>
-          <Text style={styles.sectionHeaderText}>I. CENTER & COURSE SELECTION</Text>
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.inputGroupHalf}>
-            <Text style={styles.label}>CHOOSE CENTER <Text style={styles.required}>*</Text></Text>
+          <View style={styles.photoUploadContainer}>
             <TouchableOpacity 
-              style={styles.inputWrapper} 
-              onPress={() => setActiveDropdown('branch')}
+              style={styles.photoUploadBox}
+              onPress={openPicker}
+              activeOpacity={0.85}
             >
-              <Text style={[styles.inputDropdownText, !formData.branch && { color: COLORS.gray }]}>
-                {formData.branch || '-- Select Branch --'}
-              </Text>
-              <MaterialIcons name="keyboard-arrow-down" size={20} color={COLORS.gray} />
+              {photoUri ? (
+                <>
+                  <Image source={{ uri: photoUri }} style={styles.photoPreview} />
+                  {imgLoading ? (
+                    <View style={styles.photoUploadingOverlay}>
+                      <ActivityIndicator size="small" color="#ffffff" />
+                      <Text style={styles.progressText}>Uploading... {uploadProgress}%</Text>
+                      <View style={styles.progressBarBg}>
+                        <View style={[styles.progressBarFill, { width: `${uploadProgress}%` }]} />
+                      </View>
+                    </View>
+                  ) : (
+                    <View style={styles.photoOverlay}>
+                      <MaterialIcons name="edit" size={22} color="#ffffff" />
+                      <Text style={styles.photoOverlayText}>Change Photo</Text>
+                    </View>
+                  )}
+                </>
+              ) : (
+                <>
+                  {imgLoading ? (
+                    <View style={{ alignItems: 'center' }}>
+                      <ActivityIndicator size="large" color={COLORS.primary} />
+                      <Text style={styles.progressTextDark}>Uploading... {uploadProgress}%</Text>
+                    </View>
+                  ) : (
+                    <>
+                      <View style={styles.uploadIconContainer}>
+                        <MaterialIcons name="cloud-upload" size={42} color={COLORS.secondary} />
+                      </View>
+                      <Text style={styles.photoPlaceholderText}>Tap to upload photo</Text>
+                      <Text style={styles.photoSizeText}>JPG, PNG, GIF supported</Text>
+                    </>
+                  )}
+                </>
+              )}
             </TouchableOpacity>
           </View>
 
-          <View style={styles.inputGroupHalf}>
-            <Text style={styles.label}>SELECT COURSE <Text style={styles.required}>*</Text></Text>
-            <TouchableOpacity 
-              style={styles.inputWrapper} 
-              onPress={() => setActiveDropdown('course')}
-            >
-              <Text style={[styles.inputDropdownText, !formData.course && { color: COLORS.gray }]} numberOfLines={1}>
-                {formData.course || '-- Select Course --'}
-              </Text>
-              <MaterialIcons name="keyboard-arrow-down" size={20} color={COLORS.gray} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Admission Date Picker Touch */}
-        <View style={styles.inputGroupFull}>
-          <Text style={styles.label}>ADMISSION DATE <Text style={styles.required}>*</Text></Text>
-          <TouchableOpacity 
-            style={styles.inputWrapper}
-            onPress={() => openDateChooser('admissionDate')}
-          >
-            <Text style={styles.inputDropdownText}>{formData.admissionDate}</Text>
-            <MaterialIcons name="calendar-today" size={18} color={COLORS.secondary} />
-          </TouchableOpacity>
-        </View>
-
-        {/* SECTION II: PERSONAL DETAILS */}
-        <View style={[styles.sectionHeaderBox, { borderLeftColor: '#8b5cf6' }]}>
-          <View style={[styles.sectionIconBox, { backgroundColor: '#8b5cf615' }]}>
-            <MaterialIcons name="person-outline" size={16} color="#8b5cf6" />
-          </View>
-          <Text style={styles.sectionHeaderText}>II. PERSONAL DETAILS</Text>
-        </View>
-
-        <View style={styles.inputGroupFull}>
-          <Text style={styles.label}>STUDENT FULL NAME <Text style={styles.required}>*</Text></Text>
-          <TextInput
-            style={styles.inputStandard}
-            placeholder="Enter student full name"
-            placeholderTextColor={COLORS.gray}
-            value={formData.fullName}
-            onChangeText={(val) => updateField('fullName', val)}
-          />
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.inputGroupHalf}>
-            <Text style={styles.label}>FATHER'S NAME <Text style={styles.required}>*</Text></Text>
-            <TextInput
-              style={styles.inputStandard}
-              placeholder="Father's name"
-              placeholderTextColor={COLORS.gray}
-              value={formData.fatherName}
-              onChangeText={(val) => updateField('fatherName', val)}
+          {Platform.OS === 'web' && (
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              style={styles.hiddenFileInput}
+              id="photo-upload"
             />
-          </View>
-          <View style={styles.inputGroupHalf}>
-            <Text style={styles.label}>MOTHER'S NAME <Text style={styles.required}>*</Text></Text>
-            <TextInput
-              style={styles.inputStandard}
-              placeholder="Mother's name"
-              placeholderTextColor={COLORS.gray}
-              value={formData.motherName}
-              onChangeText={(val) => updateField('motherName', val)}
-            />
-          </View>
-        </View>
+          )}
 
-        <View style={styles.row}>
-          {/* DOB Picker Touch */}
-          <View style={styles.inputGroupHalf}>
-            <Text style={styles.label}>DATE OF BIRTH <Text style={styles.required}>*</Text></Text>
+          {/* Notice Banner */}
+          <View style={styles.noticeAlert}>
+            <MaterialIcons name="info-outline" size={16} color="#d97706" style={{ marginRight: 6 }} />
+            <Text style={styles.noticeAlertText}>
+              PLEASE UPLOAD YOUR PHOTOGRAPH AS THE FIRST STEP OF ADMISSION
+            </Text>
+          </View>
+
+          {/* SECTION II: CENTER & COURSE SELECTION */}
+          <View style={[styles.sectionHeaderBox, { borderLeftColor: '#ef4444' }]}>
+            <View style={[styles.sectionIconBox, { backgroundColor: '#ef444415' }]}>
+              <MaterialIcons name="domain" size={16} color="#ef4444" />
+            </View>
+            <Text style={styles.sectionHeaderText}>II. CENTER & COURSE SELECTION</Text>
+          </View>
+
+          <View style={styles.row}>
+            <View style={styles.inputGroupHalf}>
+              <Text style={styles.label}>CHOOSE CENTER <Text style={styles.required}>*</Text></Text>
+              <TouchableOpacity 
+                style={styles.inputWrapper} 
+                onPress={() => setActiveDropdown('branch')}
+              >
+                <Text style={[styles.inputDropdownText, !formData.branch && { color: COLORS.gray }]}>
+                  {formData.branch || '-- Select Branch --'}
+                </Text>
+                <MaterialIcons name="keyboard-arrow-down" size={20} color={COLORS.gray} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputGroupHalf}>
+              <Text style={styles.label}>SELECT COURSE <Text style={styles.required}>*</Text></Text>
+              <TouchableOpacity 
+                style={styles.inputWrapper} 
+                onPress={() => setActiveDropdown('course')}
+              >
+                <Text style={[styles.inputDropdownText, !formData.course && { color: COLORS.gray }]} numberOfLines={1}>
+                  {formData.course || '-- Select Course --'}
+                </Text>
+                <MaterialIcons name="keyboard-arrow-down" size={20} color={COLORS.gray} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Admission Date Picker Touch */}
+          <View style={styles.inputGroupFull}>
+            <Text style={styles.label}>ADMISSION DATE <Text style={styles.required}>*</Text></Text>
             <TouchableOpacity 
               style={styles.inputWrapper}
-              onPress={() => openDateChooser('dob')}
+              onPress={() => openDateChooser('admissionDate')}
             >
-              <Text style={[styles.inputDropdownText, !formData.dob && { color: COLORS.gray }]}>
-                {formData.dob || 'YYYY-MM-DD'}
-              </Text>
-              <MaterialIcons name="event" size={18} color={COLORS.gray} />
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.inputGroupHalf}>
-            <Text style={styles.label}>GENDER <Text style={styles.required}>*</Text></Text>
-            <TouchableOpacity 
-              style={styles.inputWrapper} 
-              onPress={() => setActiveDropdown('gender')}
-            >
-              <Text style={[styles.inputDropdownText, !formData.gender && { color: COLORS.gray }]}>
-                {formData.gender || 'Select Gender'}
-              </Text>
-              <MaterialIcons name="keyboard-arrow-down" size={20} color={COLORS.gray} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.inputGroupFull}>
-          <Text style={styles.label}>AADHAR NUMBER (OPTIONAL)</Text>
-          <TextInput
-            style={styles.inputStandard}
-            placeholder="Enter 12 digit Aadhar"
-            placeholderTextColor={COLORS.gray}
-            keyboardType="numeric"
-            maxLength={12}
-            value={formData.aadhar}
-            onChangeText={(val) => updateField('aadhar', val)}
-          />
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.inputGroupHalf}>
-            <Text style={styles.label}>CATEGORY <Text style={styles.required}>*</Text></Text>
-            <TouchableOpacity 
-              style={styles.inputWrapper} 
-              onPress={() => setActiveDropdown('category')}
-            >
-              <Text style={[styles.inputDropdownText, !formData.category && { color: COLORS.gray }]}>
-                {formData.category || 'Select Category'}
-              </Text>
-              <MaterialIcons name="keyboard-arrow-down" size={20} color={COLORS.gray} />
+              <Text style={styles.inputDropdownText}>{formData.admissionDate}</Text>
+              <MaterialIcons name="calendar-today" size={18} color={COLORS.secondary} />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.inputGroupHalf}>
-            <Text style={styles.label}>HIGHEST QUALIFICATION <Text style={styles.required}>*</Text></Text>
+          {/* SECTION III: PERSONAL DETAILS */}
+          <View style={[styles.sectionHeaderBox, { borderLeftColor: '#8b5cf6' }]}>
+            <View style={[styles.sectionIconBox, { backgroundColor: '#8b5cf615' }]}>
+              <MaterialIcons name="person-outline" size={16} color="#8b5cf6" />
+            </View>
+            <Text style={styles.sectionHeaderText}>III. PERSONAL DETAILS</Text>
+          </View>
+
+          <View style={styles.inputGroupFull}>
+            <Text style={styles.label}>STUDENT FULL NAME <Text style={styles.required}>*</Text></Text>
             <TextInput
               style={styles.inputStandard}
-              placeholder="e.g. 10th, 12th, Graduate"
+              placeholder="Enter student full name"
               placeholderTextColor={COLORS.gray}
-              value={formData.qualification}
-              onChangeText={(val) => updateField('qualification', val)}
+              value={formData.fullName}
+              onChangeText={(val) => updateField('fullName', val)}
             />
           </View>
-        </View>
 
-        {/* SECTION III: CONTACT INFORMATION */}
-        <View style={[styles.sectionHeaderBox, { borderLeftColor: '#10b981' }]}>
-          <View style={[styles.sectionIconBox, { backgroundColor: '#10b98115' }]}>
-            <MaterialIcons name="phone" size={16} color="#10b981" />
-          </View>
-          <Text style={styles.sectionHeaderText}>III. CONTACT INFORMATION</Text>
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.inputGroupHalf}>
-            <Text style={styles.label}>MOBILE NUMBER <Text style={styles.required}>*</Text></Text>
-            <View style={styles.inputWrapper}>
-              <MaterialIcons name="phone-iphone" size={16} color={COLORS.secondary} style={{ marginRight: 6 }} />
+          <View style={styles.row}>
+            <View style={styles.inputGroupHalf}>
+              <Text style={styles.label}>FATHER'S NAME <Text style={styles.required}>*</Text></Text>
               <TextInput
-                style={styles.input}
-                placeholder="10 Digit Mobile No."
+                style={styles.inputStandard}
+                placeholder="Father's name"
                 placeholderTextColor={COLORS.gray}
-                keyboardType="phone-pad"
-                maxLength={10}
-                value={formData.mobile}
-                onChangeText={(val) => updateField('mobile', val)}
+                value={formData.fatherName}
+                onChangeText={(val) => updateField('fatherName', val)}
+              />
+            </View>
+            <View style={styles.inputGroupHalf}>
+              <Text style={styles.label}>MOTHER'S NAME <Text style={styles.required}>*</Text></Text>
+              <TextInput
+                style={styles.inputStandard}
+                placeholder="Mother's name"
+                placeholderTextColor={COLORS.gray}
+                value={formData.motherName}
+                onChangeText={(val) => updateField('motherName', val)}
               />
             </View>
           </View>
-          <View style={styles.inputGroupHalf}>
-            <Text style={styles.label}>EMAIL ADDRESS <Text style={styles.required}>*</Text></Text>
-            <View style={styles.inputWrapper}>
-              <MaterialIcons name="email" size={16} color={COLORS.secondary} style={{ marginRight: 6 }} />
-              <TextInput
-                style={styles.input}
-                placeholder="example@mail.com"
-                placeholderTextColor={COLORS.gray}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={formData.email}
-                onChangeText={(val) => updateField('email', val)}
-              />
+
+          <View style={styles.row}>
+            {/* DOB Picker Touch */}
+            <View style={styles.inputGroupHalf}>
+              <Text style={styles.label}>DATE OF BIRTH <Text style={styles.required}>*</Text></Text>
+              <TouchableOpacity 
+                style={styles.inputWrapper}
+                onPress={() => openDateChooser('dob')}
+              >
+                <Text style={[styles.inputDropdownText, !formData.dob && { color: COLORS.gray }]}>
+                  {formData.dob || 'YYYY-MM-DD'}
+                </Text>
+                <MaterialIcons name="event" size={18} color={COLORS.gray} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.inputGroupHalf}>
+              <Text style={styles.label}>GENDER <Text style={styles.required}>*</Text></Text>
+              <TouchableOpacity 
+                style={styles.inputWrapper} 
+                onPress={() => setActiveDropdown('gender')}
+              >
+                <Text style={[styles.inputDropdownText, !formData.gender && { color: COLORS.gray }]}>
+                  {formData.gender || 'Select Gender'}
+                </Text>
+                <MaterialIcons name="keyboard-arrow-down" size={20} color={COLORS.gray} />
+              </TouchableOpacity>
             </View>
           </View>
-        </View>
 
-        {/* SECTION IV: ADDRESS DETAILS */}
-        <View style={[styles.sectionHeaderBox, { borderLeftColor: '#f59e0b' }]}>
-          <View style={[styles.sectionIconBox, { backgroundColor: '#f59e0b15' }]}>
-            <MaterialIcons name="location-on" size={16} color="#f59e0b" />
-          </View>
-          <Text style={styles.sectionHeaderText}>IV. ADDRESS DETAILS</Text>
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.inputGroupThirdSmall}>
-            <Text style={styles.label}>PINCODE <Text style={styles.required}>*</Text></Text>
+          <View style={styles.inputGroupFull}>
+            <Text style={styles.label}>AADHAR NUMBER (OPTIONAL)</Text>
             <TextInput
               style={styles.inputStandard}
-              placeholder="Pincode"
+              placeholder="Enter 12 digit Aadhar"
               placeholderTextColor={COLORS.gray}
               keyboardType="numeric"
-              maxLength={6}
-              value={formData.pincode}
-              onChangeText={(val) => updateField('pincode', val)}
+              maxLength={12}
+              value={formData.aadhar}
+              onChangeText={(val) => updateField('aadhar', val)}
             />
           </View>
-          <View style={styles.inputGroupWide}>
-            <Text style={styles.label}>VILLAGE/TOWN <Text style={styles.required}>*</Text></Text>
+
+          <View style={styles.row}>
+            <View style={styles.inputGroupHalf}>
+              <Text style={styles.label}>CATEGORY <Text style={styles.required}>*</Text></Text>
+              <TouchableOpacity 
+                style={styles.inputWrapper} 
+                onPress={() => setActiveDropdown('category')}
+              >
+                <Text style={[styles.inputDropdownText, !formData.category && { color: COLORS.gray }]}>
+                  {formData.category || 'Select Category'}
+                </Text>
+                <MaterialIcons name="keyboard-arrow-down" size={20} color={COLORS.gray} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputGroupHalf}>
+              <Text style={styles.label}>HIGHEST QUALIFICATION <Text style={styles.required}>*</Text></Text>
+              <TextInput
+                style={styles.inputStandard}
+                placeholder="e.g. 10th, 12th, Graduate"
+                placeholderTextColor={COLORS.gray}
+                value={formData.qualification}
+                onChangeText={(val) => updateField('qualification', val)}
+              />
+            </View>
+          </View>
+
+          {/* SECTION IV: CONTACT INFORMATION */}
+          <View style={[styles.sectionHeaderBox, { borderLeftColor: '#10b981' }]}>
+            <View style={[styles.sectionIconBox, { backgroundColor: '#10b98115' }]}>
+              <MaterialIcons name="phone" size={16} color="#10b981" />
+            </View>
+            <Text style={styles.sectionHeaderText}>IV. CONTACT INFORMATION</Text>
+          </View>
+
+          <View style={styles.row}>
+            <View style={styles.inputGroupHalf}>
+              <Text style={styles.label}>MOBILE NUMBER <Text style={styles.required}>*</Text></Text>
+              <View style={styles.inputWrapper}>
+                <MaterialIcons name="phone-iphone" size={16} color={COLORS.secondary} style={{ marginRight: 6 }} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="10 Digit Mobile No."
+                  placeholderTextColor={COLORS.gray}
+                  keyboardType="phone-pad"
+                  maxLength={10}
+                  value={formData.mobile}
+                  onChangeText={(val) => updateField('mobile', val)}
+                />
+              </View>
+            </View>
+            <View style={styles.inputGroupHalf}>
+              <Text style={styles.label}>EMAIL ADDRESS <Text style={styles.required}>*</Text></Text>
+              <View style={styles.inputWrapper}>
+                <MaterialIcons name="email" size={16} color={COLORS.secondary} style={{ marginRight: 6 }} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="example@mail.com"
+                  placeholderTextColor={COLORS.gray}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={formData.email}
+                  onChangeText={(val) => updateField('email', val)}
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* SECTION V: ADDRESS DETAILS */}
+          <View style={[styles.sectionHeaderBox, { borderLeftColor: '#f59e0b' }]}>
+            <View style={[styles.sectionIconBox, { backgroundColor: '#f59e0b15' }]}>
+              <MaterialIcons name="location-on" size={16} color="#f59e0b" />
+            </View>
+            <Text style={styles.sectionHeaderText}>V. ADDRESS DETAILS</Text>
+          </View>
+
+          <View style={styles.row}>
+            <View style={styles.inputGroupThirdSmall}>
+              <Text style={styles.label}>PINCODE <Text style={styles.required}>*</Text></Text>
+              <TextInput
+                style={styles.inputStandard}
+                placeholder="Pincode"
+                placeholderTextColor={COLORS.gray}
+                keyboardType="numeric"
+                maxLength={6}
+                value={formData.pincode}
+                onChangeText={(val) => updateField('pincode', val)}
+              />
+            </View>
+            <View style={styles.inputGroupWide}>
+              <Text style={styles.label}>VILLAGE/TOWN <Text style={styles.required}>*</Text></Text>
+              <TextInput
+                style={styles.inputStandard}
+                placeholder="Village/Town name"
+                placeholderTextColor={COLORS.gray}
+                value={formData.village}
+                onChangeText={(val) => updateField('village', val)}
+              />
+            </View>
+          </View>
+
+          <View style={styles.row}>
+            <View style={styles.inputGroupThird}>
+              <Text style={styles.label}>POST OFFICE <Text style={styles.required}>*</Text></Text>
+              <TextInput
+                style={styles.inputStandard}
+                placeholder="Post Office"
+                placeholderTextColor={COLORS.gray}
+                value={formData.postOffice}
+                onChangeText={(val) => updateField('postOffice', val)}
+              />
+            </View>
+            <View style={styles.inputGroupThird}>
+              <Text style={styles.label}>POLICE STATION <Text style={styles.required}>*</Text></Text>
+              <TextInput
+                style={styles.inputStandard}
+                placeholder="Police Station"
+                placeholderTextColor={COLORS.gray}
+                value={formData.policeStation}
+                onChangeText={(val) => updateField('policeStation', val)}
+              />
+            </View>
+            <View style={styles.inputGroupThird}>
+              <Text style={styles.label}>DISTRICT <Text style={styles.required}>*</Text></Text>
+              <TextInput
+                style={styles.inputStandard}
+                placeholder="District"
+                placeholderTextColor={COLORS.gray}
+                value={formData.district}
+                onChangeText={(val) => updateField('district', val)}
+              />
+            </View>
+          </View>
+
+          <View style={styles.inputGroupFull}>
+            <Text style={styles.label}>STATE <Text style={styles.required}>*</Text></Text>
             <TextInput
               style={styles.inputStandard}
-              placeholder="Village/Town name"
+              placeholder="State"
               placeholderTextColor={COLORS.gray}
-              value={formData.village}
-              onChangeText={(val) => updateField('village', val)}
+              value={formData.state}
+              onChangeText={(val) => updateField('state', val)}
             />
           </View>
-        </View>
 
-        <View style={styles.row}>
-          <View style={styles.inputGroupThird}>
-            <Text style={styles.label}>POST OFFICE <Text style={styles.required}>*</Text></Text>
+          {/* AUTO ADDRESS TOGGLE SWITCH */}
+          <View style={styles.toggleRow}>
+            <Text style={styles.labelToggle}>Auto Complete Address from fields</Text>
+            <Switch
+              trackColor={{ false: '#cbd5e1', true: '#bae6fd' }}
+              thumbColor={autoAddress ? COLORS.primary : '#f4f3f4'}
+              onValueChange={toggleAutoAddress}
+              value={autoAddress}
+            />
+          </View>
+
+          <View style={styles.inputGroupFull}>
+            <Text style={styles.label}>FULL PERMANENT ADDRESS</Text>
             <TextInput
-              style={styles.inputStandard}
-              placeholder="Post Office"
+              style={styles.textArea}
+              placeholder="Type complete address..."
               placeholderTextColor={COLORS.gray}
-              value={formData.postOffice}
-              onChangeText={(val) => updateField('postOffice', val)}
+              multiline
+              numberOfLines={3}
+              value={formData.address}
+              onChangeText={(val) => updateField('address', val)}
             />
           </View>
-          <View style={styles.inputGroupThird}>
-            <Text style={styles.label}>POLICE STATION <Text style={styles.required}>*</Text></Text>
-            <TextInput
-              style={styles.inputStandard}
-              placeholder="Police Station"
-              placeholderTextColor={COLORS.gray}
-              value={formData.policeStation}
-              onChangeText={(val) => updateField('policeStation', val)}
-            />
-          </View>
-          <View style={styles.inputGroupThird}>
-            <Text style={styles.label}>DISTRICT <Text style={styles.required}>*</Text></Text>
-            <TextInput
-              style={styles.inputStandard}
-              placeholder="District"
-              placeholderTextColor={COLORS.gray}
-              value={formData.district}
-              onChangeText={(val) => updateField('district', val)}
-            />
-          </View>
+
+          {/* Declaration Checkbox */}
+          <TouchableOpacity 
+            style={styles.declarationBox} 
+            activeOpacity={0.9}
+            onPress={() => setFormData(prev => ({ ...prev, agreed: !prev.agreed }))}
+          >
+            <View style={[styles.checkbox, formData.agreed && styles.checkboxChecked]}>
+              {formData.agreed && <MaterialIcons name="check" size={14} color="#ffffff" />}
+            </View>
+            <Text style={styles.declarationText}>
+              I hereby declare that all provided details are correct and I will abide by the rules of the center.
+            </Text>
+          </TouchableOpacity>
+
+          {/* Submit Button */}
+          <TouchableOpacity 
+            style={styles.submitBtn} 
+            activeOpacity={0.85}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <>
+                <MaterialIcons name="check-circle" size={18} color="#ffffff" style={{ marginRight: 8 }} />
+                <Text style={styles.submitBtnText}>FINALIZE ADMISSION</Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
-
-        <View style={styles.inputGroupFull}>
-          <Text style={styles.label}>STATE <Text style={styles.required}>*</Text></Text>
-          <TextInput
-            style={styles.inputStandard}
-            placeholder="State"
-            placeholderTextColor={COLORS.gray}
-            value={formData.state}
-            onChangeText={(val) => updateField('state', val)}
-          />
-        </View>
-
-        {/* AUTO ADDRESS TOGGLE SWITCH */}
-        <View style={styles.toggleRow}>
-          <Text style={styles.labelToggle}>Auto Complete Address from fields</Text>
-          <Switch
-            trackColor={{ false: '#cbd5e1', true: '#bae6fd' }}
-            thumbColor={autoAddress ? COLORS.primary : '#f4f3f4'}
-            onValueChange={toggleAutoAddress}
-            value={autoAddress}
-          />
-        </View>
-
-        <View style={styles.inputGroupFull}>
-          <Text style={styles.label}>FULL PERMANENT ADDRESS</Text>
-          <TextInput
-            style={styles.textArea}
-            placeholder="Type complete address..."
-            placeholderTextColor={COLORS.gray}
-            multiline
-            numberOfLines={3}
-            value={formData.address}
-            onChangeText={(val) => updateField('address', val)}
-          />
-        </View>
-
-        {/* Declaration Checkbox */}
-        <TouchableOpacity 
-          style={styles.declarationBox} 
-          activeOpacity={0.9}
-          onPress={() => setFormData(prev => ({ ...prev, agreed: !prev.agreed }))}
-        >
-          <View style={[styles.checkbox, formData.agreed && styles.checkboxChecked]}>
-            {formData.agreed && <MaterialIcons name="check" size={14} color="#ffffff" />}
-          </View>
-          <Text style={styles.declarationText}>
-            I hereby declare that all provided details are correct and I will abide by the rules of the center.
-          </Text>
-        </TouchableOpacity>
-
-        {/* Submit Button */}
-        <TouchableOpacity 
-          style={styles.submitBtn} 
-          activeOpacity={0.85}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#ffffff" />
-          ) : (
-            <>
-              <MaterialIcons name="check-circle" size={18} color="#ffffff" style={{ marginRight: 8 }} />
-              <Text style={styles.submitBtnText}>FINALIZE ADMISSION</Text>
-            </>
-          )}
-        </TouchableOpacity>
       </View>
 
       {/* NATIVE DATETIME PICKER MODAL */}
@@ -846,62 +853,135 @@ export default function AdmissionScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f7fa' },
-  headerBanner: { backgroundColor: COLORS.primary, paddingVertical: 24, paddingHorizontal: 16, alignItems: 'center', borderBottomLeftRadius: 28, borderBottomRightRadius: 28, position: 'relative', overflow: 'hidden' },
-  headerGlowOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(2, 132, 199, 0.15)' },
-  logoBadge: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', marginBottom: 10, borderWidth: 2, borderColor: 'rgba(255, 255, 255, 0.9)', elevation: 4 },
+  container: { flex: 1, backgroundColor: '#F0F6FF', position: 'relative' },
+  
+  // Background Glowing Orbs
+  bgGlowOrbTopLeft: {
+    position: "absolute",
+    top: -80,
+    left: -70,
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    backgroundColor: "#38BDF8",
+    opacity: 0.35,
+    transform: [{ scale: 1.5 }]
+  },
+  bgGlowOrbBottomRight: {
+    position: "absolute",
+    bottom: -80,
+    right: -70,
+    width: 350,
+    height: 350,
+    borderRadius: 175,
+    backgroundColor: "#34D399",
+    opacity: 0.3,
+  },
+  bgGlowOrbCenter: {
+    position: "absolute",
+    top: "40%",
+    left: "20%",
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: "#C084FC",
+    opacity: 0.22,
+  },
+
+  // Streamlined Compact Header Banner with Dual-Tone Gradient Simulated Look
+  headerBanner: { 
+    backgroundColor: '#0284C7', // Base deep blue tone
+    paddingVertical: 16, 
+    paddingHorizontal: 4, 
+    alignItems: 'center', 
+    borderBottomLeftRadius: 22, 
+    borderBottomRightRadius: 22, 
+    position: 'relative', 
+    overflow: 'hidden',
+    elevation: 8,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    borderBottomWidth: 3,
+    borderBottomColor: '#38BDF8', // Gradient highlight line effect
+  },
+  headerGlowOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(56, 189, 248, 0.25)' },
+  logoBadge: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', marginBottom: 6, borderWidth: 2, borderColor: 'rgba(255, 255, 255, 0.9)', elevation: 4 },
   logoImage: { width: '80%', height: '80%' },
-  headerTitle: { color: '#ffffff', fontSize: 18, fontWeight: '800', textAlign: 'center' },
-  headerSubtitle: { color: COLORS.accent, fontSize: 10, fontWeight: '700', marginTop: 4, textAlign: 'center' },
-  sessionBadge: { marginTop: 10, backgroundColor: 'rgba(2, 132, 199, 0.4)', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.2)' },
-  sessionBadgeText: { color: '#ffffff', fontSize: 10, fontWeight: '700' },
-  photoUploadSection: { marginHorizontal: 16, marginTop: 16 },
-  photoUploadHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  headerIconContainer: { width: 28, height: 28, borderRadius: 8, backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center', marginRight: 8 },
-  photoUploadTitle: { fontSize: 13, fontWeight: '700', color: '#1e293b', flex: 1 },
-  sizeBadge: { backgroundColor: '#fef3c7', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12, borderWidth: 1, borderColor: '#fde68a' },
-  sizeBadgeText: { fontSize: 8, fontWeight: '700', color: '#92400e' },
-  photoUploadContainer: { backgroundColor: '#ffffff', borderRadius: 16, padding: 12, borderWidth: 1, borderColor: '#e2e8f0', elevation: 2 },
-  photoUploadBox: { width: '100%', height: 180, borderRadius: 12, backgroundColor: '#f8fafc', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#e2e8f0', borderStyle: 'dashed', overflow: 'hidden', position: 'relative' },
+  headerTitle: { color: '#ffffff', fontSize: 15, fontWeight: '900', textAlign: 'center', letterSpacing: 0.5 },
+  headerSubtitle: { color: '#E0F2FE', fontSize: 8, fontWeight: '700', marginTop: 2, textAlign: 'center', letterSpacing: 0.5 },
+  sessionBadge: { marginTop: 6, backgroundColor: 'rgba(2, 132, 199, 0.6)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.3)' },
+  sessionBadgeText: { color: '#ffffff', fontSize: 8, fontWeight: '800', letterSpacing: 0.5 },
+
+  // Photo Upload Container inside Form
+  sizeBadge: { backgroundColor: '#fef3c7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10, borderWidth: 1, borderColor: '#fde68a', marginLeft: 'auto' },
+  sizeBadgeText: { fontSize: 7, fontWeight: '800', color: '#92400e' },
+  photoUploadContainer: { marginVertical: 10 },
+  photoUploadBox: { width: '100%', height: 150, borderRadius: 12, backgroundColor: '#f8fafc', justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, borderColor: '#cbd5e1', borderStyle: 'dashed', overflow: 'hidden', position: 'relative' },
   photoPreview: { width: '100%', height: '100%', resizeMode: 'cover' },
   photoOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
-  photoOverlayText: { color: '#ffffff', fontSize: 12, fontWeight: '600', marginTop: 4 },
+  photoOverlayText: { color: '#ffffff', fontSize: 11, fontWeight: '700', marginTop: 4 },
   photoUploadingOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
   progressText: { color: '#ffffff', fontSize: 12, fontWeight: '700', marginTop: 6 },
   progressTextDark: { color: COLORS.primary, fontSize: 12, fontWeight: '700', marginTop: 6 },
   progressBarBg: { width: '80%', height: 6, backgroundColor: '#cbd5e1', borderRadius: 3, marginTop: 8, overflow: 'hidden' },
   progressBarFill: { height: '100%', backgroundColor: '#10b981' },
-  uploadIconContainer: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#f0f9ff', justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
-  photoPlaceholderText: { fontSize: 14, fontWeight: '600', color: '#475569', marginTop: 4 },
-  photoSizeText: { fontSize: 11, color: '#94a3b8', marginTop: 2 },
+  uploadIconContainer: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#f0f9ff', justifyContent: 'center', alignItems: 'center', marginBottom: 6, borderWidth: 1, borderColor: '#bae6fd' },
+  photoPlaceholderText: { fontSize: 12, fontWeight: '700', color: '#475569', marginTop: 4 },
+  photoSizeText: { fontSize: 9, color: '#94a3b8', marginTop: 2 },
   hiddenFileInput: { display: 'none' },
-  noticeAlert: { backgroundColor: '#fef3c7', marginHorizontal: 16, marginTop: 16, padding: 12, borderRadius: 12, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#fde68a' },
-  noticeAlertText: { color: '#92400e', fontSize: 10, fontWeight: '700', flex: 1 },
-  formBody: { padding: 16 },
-  sectionHeaderBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.9)', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, marginTop: 14, marginBottom: 12, borderLeftWidth: 5, borderWidth: 1, borderColor: '#e2e8f0' },
-  sectionIconBox: { width: 28, height: 28, borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginRight: 8 },
-  sectionHeaderText: { color: COLORS.primary, fontSize: 12, fontWeight: '800' },
-  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+
+  noticeAlert: { backgroundColor: '#fef3c7', marginTop: 6, marginBottom: 14, padding: 8, borderRadius: 10, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#fde68a' },
+  noticeAlertText: { color: '#92400e', fontSize: 8, fontWeight: '800', flex: 1 },
+
+  // Glassmorphism Form Card Wrapper with increased spacing and gaps
+  formGlassCard: {
+    marginHorizontal: 2,
+    marginTop: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
+    borderRadius: 20,
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+    elevation: 10,
+    shadowColor: "#0EA5E9",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    overflow: 'hidden',
+  },
+  formBody: { padding: 10 }, // Increased padding for better internal spacing
+
+  sectionHeaderBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.95)', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, marginTop: 16, marginBottom: 12, borderLeftWidth: 4, borderWidth: 1, borderColor: '#e2e8f0' },
+  sectionIconBox: { width: 24, height: 24, borderRadius: 6, justifyContent: 'center', alignItems: 'center', marginRight: 8 },
+  sectionHeaderText: { color: COLORS.primary, fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
+
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }, // Increased bottom margin to eliminate crowding
   inputGroupHalf: { width: '48%' },
   inputGroupThird: { width: '31%' },
   inputGroupThirdSmall: { width: '28%' },
   inputGroupWide: { width: '69%' },
-  inputGroupFull: { marginBottom: 10 },
-  label: { fontSize: 10, fontWeight: '700', color: '#475569', marginBottom: 4 },
+  inputGroupFull: { marginBottom: 12 }, // Increased vertical gap for full-width fields
+  label: { fontSize: 8.5, fontWeight: '800', color: '#475569', marginBottom: 5, letterSpacing: 0.3 }, // Improved gap between label and input box
   required: { color: '#ef4444' },
-  inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ffffff', borderRadius: 10, borderWidth: 1, borderColor: '#cbd5e1', paddingHorizontal: 10, height: 44, justifyContent: 'space-between' },
-  input: { flex: 1, fontSize: 12, color: '#1e293b', paddingVertical: 0 },
-  inputDropdownText: { fontSize: 12, color: '#1e293b', flex: 1 },
-  inputStandard: { backgroundColor: '#ffffff', borderRadius: 10, borderWidth: 1, borderColor: '#cbd5e1', paddingHorizontal: 10, height: 44, fontSize: 12, color: '#1e293b' },
-  textArea: { backgroundColor: '#ffffff', borderRadius: 10, borderWidth: 1, borderColor: '#cbd5e1', paddingHorizontal: 10, paddingTop: 10, fontSize: 12, color: '#1e293b', height: 80, textAlignVertical: 'top' },
-  toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f0f9ff', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: '#bae6fd', marginBottom: 10 },
-  labelToggle: { fontSize: 11, fontWeight: '800', color: '#0284c7' },
-  declarationBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fef3c7', padding: 12, borderRadius: 12, marginTop: 10, marginBottom: 16, borderWidth: 1, borderColor: '#fde68a' },
-  checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 1.5, borderColor: COLORS.secondary, justifyContent: 'center', alignItems: 'center', marginRight: 10, backgroundColor: '#ffffff' },
+
+  inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: 8, borderWidth: 1, borderColor: '#CBD5E1', paddingHorizontal: 8, height: 42, justifyContent: 'space-between' },
+  input: { flex: 1, fontSize: 11, color: '#1e293b', paddingVertical: 0, fontWeight: '600' },
+  inputDropdownText: { fontSize: 11, color: '#1e293b', flex: 1, fontWeight: '600' },
+  inputStandard: { backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: 8, borderWidth: 1, borderColor: '#CBD5E1', paddingHorizontal: 8, height: 42, fontSize: 11, color: '#1e293b', fontWeight: '600' },
+  textArea: { backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: 8, borderWidth: 1, borderColor: '#CBD5E1', paddingHorizontal: 8, paddingTop: 8, fontSize: 11, color: '#1e293b', height: 75, textAlignVertical: 'top', fontWeight: '600' },
+
+  toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(240, 249, 255, 0.9)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#bae6fd', marginBottom: 12 },
+  labelToggle: { fontSize: 9, fontWeight: '800', color: '#0284c7' },
+
+  declarationBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fef3c7', padding: 12, borderRadius: 10, marginTop: 10, marginBottom: 14, borderWidth: 1, borderColor: '#fde68a' },
+  checkbox: { width: 16, height: 16, borderRadius: 4, borderWidth: 1.5, borderColor: COLORS.secondary, justifyContent: 'center', alignItems: 'center', marginRight: 10, backgroundColor: '#ffffff' },
   checkboxChecked: { backgroundColor: COLORS.secondary },
-  declarationText: { fontSize: 10, color: '#92400e', fontWeight: '700', flex: 1 },
-  submitBtn: { backgroundColor: COLORS.primary, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 16, borderRadius: 14, marginBottom: 50, elevation: 6 },
-  submitBtnText: { color: '#ffffff', fontSize: 13, fontWeight: '800', letterSpacing: 0.8 },
+  declarationText: { fontSize: 8.5, color: '#92400e', fontWeight: '800', flex: 1, lineHeight: 13 },
+
+  submitBtn: { backgroundColor: COLORS.primary, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 14, borderRadius: 12, marginBottom: 8, elevation: 6, shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10 },
+  submitBtnText: { color: '#ffffff', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+
   receiptBox: { backgroundColor: '#ffffff', borderRadius: 20, padding: 20, borderWidth: 1, borderColor: '#cbd5e1', elevation: 4 },
   receiptHeader: { alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#e2e8f0', paddingBottom: 16, marginBottom: 16 },
   receiptMainTitle: { fontSize: 18, fontWeight: '900', color: COLORS.primary, textAlign: 'center' },
@@ -909,6 +989,7 @@ const styles = StyleSheet.create({
   receiptRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
   receiptLabel: { fontSize: 12, fontWeight: '700', color: '#475569' },
   receiptValue: { fontSize: 12, fontWeight: '600', color: '#1e293b', textAlign: 'right' },
+
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   dropdownModalContent: { backgroundColor: '#ffffff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '60%', elevation: 10 },
   modalHandle: { width: 40, height: 4, backgroundColor: '#cbd5e1', borderRadius: 2, alignSelf: 'center', marginBottom: 16 },

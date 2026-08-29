@@ -17,7 +17,16 @@ export default function Signup({ navigation }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
-  const { signup } = useContext(AuthContext);
+  const { signup, loginWithGoogle, loginWithGithub } = useContext(AuthContext);
+
+  const handleSignupResponse = (userEmail, userRole) => {
+    const cleanEmail = userEmail ? userEmail.trim().toLowerCase() : '';
+    if (cleanEmail === 'hridesh027@gmail.com' || userRole === 'admin') {
+      navigation.replace('AdminPanel');
+    } else {
+      navigation.replace('StudentPanel');
+    }
+  };
 
   const handleSignup = async () => {
     if (!email || !password) {
@@ -27,8 +36,8 @@ export default function Signup({ navigation }) {
 
     try {
       setLoading(true);
-      await signup(email.trim(), password, 'student');
-      Alert.alert('Success', 'Account created successfully!');
+      const user = await signup(email.trim(), password, 'student');
+      handleSignupResponse(email, user?.role);
     } catch (error) {
       Alert.alert('Signup Failed', error.message);
     } finally {
@@ -36,8 +45,21 @@ export default function Signup({ navigation }) {
     }
   };
 
-  const handleSocialSignup = (provider) => {
-    Alert.alert('Coming Soon', `${provider} registration integration will be available shortly.`);
+  const handleSocialSignup = async (provider) => {
+    try {
+      setLoading(true);
+      let user;
+      if (provider === 'Google') {
+        user = await loginWithGoogle();
+      } else if (provider === 'GitHub') {
+        user = await loginWithGithub();
+      }
+      handleSignupResponse(user?.email, user?.role);
+    } catch (error) {
+      Alert.alert(`${provider} Sign-Up Failed`, error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

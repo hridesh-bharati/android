@@ -6,15 +6,16 @@ import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "../../services/firebase";
 
 export default function AdminDashboardMain({ activeTab, onNavigate }) {
-  const [stats, setStats] = useState({ total: 0, todayEnrolled: 0, activeCount: 0 });
+  const [stats, setStats] = useState({ total: 0, todayEnrolled: 0, activeCount: 0, totalQueries: 0, pendingQueries: 0 });
   const [recentStudents, setRecentStudents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(collection(db, "admissions"), orderBy("createdAt", "desc"));
+    // Sync admissions collection
+    const qAdmissions = query(collection(db, "admissions"), orderBy("createdAt", "desc"));
 
-    const unsubscribe = onSnapshot(
-      q,
+    const unsubscribeAdmissions = onSnapshot(
+      qAdmissions,
       (snapshot) => {
         const docs = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -33,17 +34,37 @@ export default function AdminDashboardMain({ activeTab, onNavigate }) {
 
         const activeCount = docs.filter((item) => !item.certificateDisabled).length;
 
-        setStats({ total, todayEnrolled, activeCount });
+        setStats((prev) => ({ ...prev, total, todayEnrolled, activeCount }));
         setRecentStudents(docs.slice(0, 6));
         setLoading(false);
       },
       (error) => {
-        console.error("Dashboard Real-time Sync Error:", error);
+        console.error("Admissions Real-time Sync Error:", error);
         setLoading(false);
       }
     );
 
-    return () => unsubscribe();
+    // Sync studentQueries collection for live inquiry stats
+    const qQueries = query(collection(db, "studentQueries"));
+
+    const unsubscribeQueries = onSnapshot(
+      qQueries,
+      (snapshot) => {
+        const queryDocs = snapshot.docs.map((doc) => doc.data());
+        const totalQueries = queryDocs.length;
+        const pendingQueries = queryDocs.filter((item) => item.status !== "reviewed").length;
+
+        setStats((prev) => ({ ...prev, totalQueries, pendingQueries }));
+      },
+      (error) => {
+        console.error("Queries Real-time Sync Error:", error);
+      }
+    );
+
+    return () => {
+      unsubscribeAdmissions();
+      unsubscribeQueries();
+    };
   }, []);
 
   const handleStudentPress = (student) => {
@@ -54,7 +75,12 @@ export default function AdminDashboardMain({ activeTab, onNavigate }) {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
-      {/* Modern Clean Header Card */}
+      {/* Background Glowing Ambient Orbs */}
+      <View style={styles.bgGlowOrbTopLeft} />
+      <View style={styles.bgGlowOrbBottomRight} />
+      <View style={styles.bgGlowOrbCenter} />
+
+      {/* Modern Clean Header Card with Glassmorphism */}
       <View style={styles.welcomeBanner}>
         <View style={styles.bannerHeaderTop}>
           <View style={styles.bannerBadge}>
@@ -72,35 +98,45 @@ export default function AdminDashboardMain({ activeTab, onNavigate }) {
         </Text>
       </View>
 
-      {/* Clean Modern Metrics Grid */}
+      {/* 2x2 Proper Grid Layout with increased height */}
       <View style={styles.metricsGrid}>
         <View style={[styles.metricCard, { borderTopColor: '#7c3aed' }]}>
           <View style={[styles.metricIconWrap, { backgroundColor: '#f3e8ff' }]}>
-            <MaterialCommunityIcons name="account-group" size={20} color="#7c3aed" />
+            <MaterialCommunityIcons name="account-group" size={22} color="#7c3aed" />
           </View>
-          <View>
-            <Text style={styles.metricNumber}>{stats.total}</Text>
-            <Text style={styles.metricLabel}>Total Students</Text>
+          <View style={styles.metricContent}>
+            <Text style={styles.metricNumber} numberOfLines={1}>{stats.total}</Text>
+            <Text style={styles.metricLabel} numberOfLines={1}>Total Students</Text>
           </View>
         </View>
 
         <View style={[styles.metricCard, { borderTopColor: '#0284c7' }]}>
           <View style={[styles.metricIconWrap, { backgroundColor: '#e0f2fe' }]}>
-            <MaterialCommunityIcons name="lightning-bolt" size={20} color="#0284c7" />
+            <MaterialCommunityIcons name="lightning-bolt" size={22} color="#0284c7" />
           </View>
-          <View>
-            <Text style={styles.metricNumber}>{stats.todayEnrolled}</Text>
-            <Text style={styles.metricLabel}>New Today</Text>
+          <View style={styles.metricContent}>
+            <Text style={styles.metricNumber} numberOfLines={1}>{stats.todayEnrolled}</Text>
+            <Text style={styles.metricLabel} numberOfLines={1}>New Today</Text>
           </View>
         </View>
 
         <View style={[styles.metricCard, { borderTopColor: '#10b981' }]}>
           <View style={[styles.metricIconWrap, { backgroundColor: '#dcfce7' }]}>
-            <MaterialCommunityIcons name="certificate" size={20} color="#10b981" />
+            <MaterialCommunityIcons name="certificate" size={22} color="#10b981" />
           </View>
-          <View>
-            <Text style={styles.metricNumber}>{stats.activeCount}</Text>
-            <Text style={styles.metricLabel}>Active Portals</Text>
+          <View style={styles.metricContent}>
+            <Text style={styles.metricNumber} numberOfLines={1}>{stats.activeCount}</Text>
+            <Text style={styles.metricLabel} numberOfLines={1}>Active Portals</Text>
+          </View>
+        </View>
+
+        <View style={[styles.metricCard, { borderTopColor: '#f59e0b' }]}>
+          <View style={[styles.metricIconWrap, { backgroundColor: '#fef3c7' }]}>
+            <MaterialCommunityIcons name="forum-outline" size={22} color="#f59e0b" />
+          </View>
+          <View style={styles.metricContent}>
+            <Text style={styles.metricNumber} numberOfLines={1}>{stats.pendingQueries}</Text>
+            <Text style={styles.metricLabel} numberOfLines={1}>Pending Enquiries</Text>
           </View>
         </View>
       </View>
@@ -154,21 +190,53 @@ export default function AdminDashboardMain({ activeTab, onNavigate }) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#F0F6FF',
     flex: 1,
+    position: 'relative',
+  },
+  // Background Glowing Orbs
+  bgGlowOrbTopLeft: {
+    position: "absolute",
+    top: -60,
+    left: -40,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: "#38BDF8",
+    opacity: 0.3,
+  },
+  bgGlowOrbBottomRight: {
+    position: "absolute",
+    bottom: 40,
+    right: -40,
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: "#34D399",
+    opacity: 0.25,
+  },
+  bgGlowOrbCenter: {
+    position: "absolute",
+    top: "40%",
+    left: "20%",
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: "#C084FC",
+    opacity: 0.2,
   },
   welcomeBanner: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderRadius: 20,
     padding: 18,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    elevation: 2,
-    shadowColor: '#64748b',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    elevation: 8,
+    shadowColor: '#0EA5E9',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
   },
   bannerHeaderTop: {
     flexDirection: 'row',
@@ -221,68 +289,54 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     fontWeight: '500',
   },
+  // 2x2 Proper Grid Layout with increased card height
   metricsGrid: {
     flexDirection: 'row',
-    gap: 10,
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     marginBottom: 16,
   },
   metricCard: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    padding: 12,
-    borderRadius: 14,
+    width: '48.5%',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    paddingVertical: 18,
+    paddingHorizontal: 14,
+    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    borderTopWidth: 3,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    elevation: 1,
+    gap: 12,
+    borderTopWidth: 4,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    elevation: 6,
+    shadowColor: '#0EA5E9',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    marginBottom: 12,
   },
   metricIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    flexShrink: 0,
+  },
+  metricContent: {
+    flex: 1,
+    minWidth: 0,
   },
   metricNumber: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '900',
     color: '#0f172a',
   },
   metricLabel: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '700',
     color: '#64748b',
-    marginTop: 1,
-  },
-  activeViewCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    marginBottom: 16,
-  },
-  activeCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 6,
-  },
-  activeViewTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  activeViewBody: {
-    fontSize: 11,
-    color: '#475569',
-    lineHeight: 16,
-  },
-  quickSection: {
-    marginBottom: 16,
+    marginTop: 2,
   },
   sectionTitle: {
     fontSize: 12,
@@ -292,41 +346,17 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.3,
   },
-  quickGrid: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  quickActionBox: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    padding: 12,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    elevation: 1,
-  },
-  quickIconBg: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  quickActionText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#334155',
-    textAlign: 'center',
-  },
   recentSection: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    elevation: 8,
+    shadowColor: '#0EA5E9',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
   },
   recentHeaderRow: {
     flexDirection: 'row',
@@ -350,8 +380,8 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderWidth: 1.5,
+    borderColor: '#bae6fd',
     backgroundColor: '#f1f5f9',
   },
   studentName: {

@@ -35,10 +35,9 @@ import AdmissionProvider from '../dashboard/admin/studentManagement/AdmissionPro
 
 // Queries / Contact Us Form Component
 import QueriesForm from '../components/QueriesForm';
-
-
 import TeamScreen from '../screens/TeamScreen';
 
+import Verification from '../screens/VerificationScreen'; 
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -155,9 +154,9 @@ export default function AppNavigator() {
         <Stack.Screen name="StudentPanel" component={StudentDashboard} />
         <Stack.Screen name="FeePage" component={FeePage} />
         <Stack.Screen name="TeamScreen" component={TeamScreen} />
-        
-        {/* StudentProfile wrapped with AdmissionProvider to fix context error */}
+        <Stack.Screen name="Verification" component={Verification} />
         <Stack.Screen name="StudentProfile">
+          
           {props => (
             <AdmissionProvider>
               <StudentProfile {...props} />

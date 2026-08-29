@@ -1,17 +1,69 @@
 // src/dashboard/admin/studentManagement/StudentCard.js
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, ActivityIndicator, Alert } from "react-native";
+import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, ActivityIndicator, Modal, Dimensions } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 
 const STATUS_COLORS = { accepted: "#10b981", canceled: "#ef4444", pending: "#f59e0b", done: "#3b82f6" };
 const BRANCH_DISPLAY = { DIIT124: "Main Branch", DIIT125: "East Branch" };
+const { width, height } = Dimensions.get("window");
 
 export const getActualStatus = (s) => {
   if (s.status === "canceled") return "canceled";
   return s.regNo && s.issueDate ? "done" : s.regNo ? "accepted" : "pending";
 };
+
+// ======================= CUSTOM CONFIRM BOX =======================
+const CustomConfirmBox = ({ visible, onClose, onConfirm, title, message, loading = false }) => {
+  return (
+    <Modal
+      transparent={true}
+      visible={visible}
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View style={styles.confirmOverlay}>
+        <View style={styles.confirmModal}>
+          {/* Icon */}
+          <View style={styles.confirmIconContainer}>
+            <MaterialIcons name="warning" size={40} color="#ef4444" />
+          </View>
+          
+          {/* Title */}
+          <Text style={styles.confirmTitle}>{title || "Confirm Delete"}</Text>
+          
+          {/* Message */}
+          <Text style={styles.confirmMessage}>{message || "Are you sure you want to delete this student?"}</Text>
+          
+          {/* Buttons */}
+          <View style={styles.confirmButtonRow}>
+            <TouchableOpacity 
+              style={[styles.confirmBtn, styles.confirmBtnCancel]} 
+              onPress={onClose}
+              disabled={loading}
+            >
+              <Text style={styles.confirmBtnTextCancel}>Cancel</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.confirmBtn, styles.confirmBtnDanger]} 
+              onPress={onConfirm}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <Text style={styles.confirmBtnTextDanger}>Delete</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+// ================================================================
 
 const StudentCard = React.memo(({ student, onSave, onDelete, navigation }) => {
   const [regNumber, setRegNumber] = useState("");
@@ -25,6 +77,10 @@ const StudentCard = React.memo(({ student, onSave, onDelete, navigation }) => {
   const [showRegInput, setShowRegInput] = useState(false);
   const [isEditingFinal, setIsEditingFinal] = useState(false);
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
+  
+  // ===== DELETE CONFIRM BOX STATE =====
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const status = useMemo(() => getActualStatus(student), [student]);
 
@@ -97,7 +153,7 @@ const StudentCard = React.memo(({ student, onSave, onDelete, navigation }) => {
 
   const handleMarkDone = useCallback(async () => {
     if (!percent || !admissionDate || !issDate) {
-      Alert.alert("Missing Fields", "Please enter percentage, admission date, and issue date.");
+      // Using custom alert or just return
       return;
     }
     setLoading(true);
@@ -111,14 +167,40 @@ const StudentCard = React.memo(({ student, onSave, onDelete, navigation }) => {
       setIsEditingFinal(false);
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", "Failed to update record.");
     } finally { 
       setLoading(false); 
     }
   }, [student.id, percent, admissionDate, issDate, onSave]);
 
+  // ===== HANDLE DELETE =====
+  const handleDeletePress = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    setDeleteLoading(true);
+    try {
+      await onDelete(student.id);
+      setShowDeleteConfirm(false);
+    } catch (err) {
+      console.error("Delete error:", err);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <View style={styles.card}>
+      {/* CUSTOM CONFIRM BOX */}
+      <CustomConfirmBox
+        visible={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Student"
+        message={`Are you sure you want to delete "${student.name || student.fullName}"? This action cannot be undone.`}
+        loading={deleteLoading}
+      />
+
       <View style={[styles.statusBar, { backgroundColor: STATUS_COLORS[status] || "#6366f1" }]} />
       <View style={styles.cardBody}>
         <View style={styles.headerRow}>
@@ -237,7 +319,7 @@ const StudentCard = React.memo(({ student, onSave, onDelete, navigation }) => {
         )}
 
         <View style={styles.footerRow}>
-          <TouchableOpacity onPress={() => onDelete(student.id)} style={styles.deleteBtn}>
+          <TouchableOpacity onPress={handleDeletePress} style={styles.deleteBtn}>
             <MaterialIcons name="delete" size={14} color="#ef4444" />
             <Text style={styles.deleteText}>Delete</Text>
           </TouchableOpacity>
@@ -287,4 +369,77 @@ const styles = StyleSheet.create({
   footerRow: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8, borderTopWidth: 1, borderTopColor: '#f1f5f9', paddingTop: 6 },
   deleteBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   deleteText: { fontSize: 11, color: '#ef4444', fontWeight: '600' },
+
+  // ===== CUSTOM CONFIRM BOX STYLES =====
+  confirmOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  confirmModal: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 24,
+    width: width * 0.85,
+    maxWidth: 340,
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  confirmIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#fee2e2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  confirmTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 8,
+  },
+  confirmMessage: {
+    fontSize: 14,
+    color: '#475569',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  confirmButtonRow: {
+    flexDirection: 'row',
+    gap: 10,
+    width: '100%',
+  },
+  confirmBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  confirmBtnCancel: {
+    backgroundColor: '#f1f5f9',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  confirmBtnDanger: {
+    backgroundColor: '#ef4444',
+  },
+  confirmBtnTextCancel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  confirmBtnTextDanger: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
 });

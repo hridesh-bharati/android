@@ -55,7 +55,7 @@ export default function AdminDashboard() {
             <StudentManagement viewMode="new_adm" />
           </AdmissionProvider>
         );
-      case 'queries': // 👈 Admin Inbox Queries Case Added
+      case 'queries': 
         return <AdaptiveAdminQueries />;
       case 'profile':
       case 'admin_list':
@@ -72,6 +72,11 @@ export default function AdminDashboard() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Background Glowing Ambient Orbs */}
+      <View style={styles.bgGlowOrbTopLeft} />
+      <View style={styles.bgGlowOrbBottomRight} />
+
+      {/* Streamlined, Glassmorphic Header Bar */}
       <View style={styles.headerBar}>
         <View style={styles.headerLeft}>
           <TouchableOpacity 
@@ -87,13 +92,13 @@ export default function AdminDashboard() {
           >
             <MaterialIcons 
               name={activeTab === 'StudentProfile' ? "arrow-back" : (sidebarOpen && !isDesktopWeb ? "close" : "menu")} 
-              size={24} 
-              color="#0f172a" 
+              size={22} 
+              color="#0F172A" 
             />
           </TouchableOpacity>
           <View style={styles.titleRow}>
             <View style={styles.headerIconWrapper}>
-              <MaterialCommunityIcons name="shield-account" size={18} color="#0284c7" />
+              <MaterialCommunityIcons name="shield-account" size={18} color="#0EA5E9" />
             </View>
             <Text style={styles.headerTitle}>
               {activeTab === 'StudentProfile' ? "Student Profile" : activeTab === 'queries' ? "Query Inbox" : "Admin Console"}
@@ -125,22 +130,46 @@ export default function AdminDashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#F0F6FF',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  // Background Glowing Orbs for Deep Glassmorphism Theme
+  bgGlowOrbTopLeft: {
+    position: 'absolute',
+    top: -80,
+    left: -60,
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    backgroundColor: '#38BDF8',
+    opacity: 0.25,
+    transform: [{ scale: 1.5 }],
+  },
+  bgGlowOrbBottomRight: {
+    position: 'absolute',
+    bottom: -80,
+    right: -60,
+    width: 340,
+    height: 340,
+    borderRadius: 170,
+    backgroundColor: '#34D399',
+    opacity: 0.2,
   },
   headerBar: {
-    height: 60,
+    height: 64,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-    elevation: 4,
-    shadowColor: '#64748b',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    borderBottomWidth: 2,
+    borderBottomColor: '#FFFFFF',
+    elevation: 8,
+    shadowColor: '#0EA5E9',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
     zIndex: 10,
   },
   headerLeft: {
@@ -149,40 +178,43 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   menuToggleBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: '#f1f5f9',
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   headerIconWrapper: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: '#e0f2fe',
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#E0F2FE',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
   },
   headerTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#0f172a',
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#0F172A',
     letterSpacing: 0.3,
   },
   mainLayout: {
     flex: 1,
     flexDirection: 'row',
+    backgroundColor: 'transparent',
   },
   contentArea: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: 'transparent',
   },
 });

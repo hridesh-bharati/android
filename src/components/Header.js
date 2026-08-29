@@ -1,11 +1,11 @@
+// src/components/Header.js
 import React, { useState, useContext } from 'react';
 import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Modal, ScrollView, Dimensions, Platform } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { COLORS } from '../constants/theme';
 import { AuthContext } from '../context/AuthContext';
-import { CommonActions } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
@@ -16,6 +16,17 @@ export default function Header() {
 
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
+  };
+
+  // Safe Navigation Helper for Root Stack & Nested Tabs
+  const navigateTo = (screenName, params) => {
+    toggleSidebar();
+    const parentNav = navigation.getParent();
+    if (parentNav) {
+      parentNav.navigate(screenName, params);
+    } else {
+      navigation.navigate(screenName, params);
+    }
   };
 
   const handleLogout = async () => {
@@ -51,7 +62,7 @@ export default function Header() {
           </View>
         </View>
 
-        {/* Middle: Clean Single Bounded Search Box */}
+        {/* Middle: Search Box */}
         <View style={styles.searchContainer}>
           <MaterialIcons name="search" size={16} color="#94a3b8" style={styles.searchIcon} />
           <TextInput
@@ -75,7 +86,7 @@ export default function Header() {
         </View>
       </View>
 
-      {/* Lighter Glassmorphic Sidebar Drawer */}
+      {/* Sidebar Drawer */}
       <Modal
         visible={sidebarVisible}
         transparent={true}
@@ -83,12 +94,10 @@ export default function Header() {
         onRequestClose={toggleSidebar}
       >
         <View style={styles.modalOverlay}>
-          {/* Backdrop click to close */}
           <TouchableOpacity style={styles.backdropTouch} activeOpacity={1} onPress={toggleSidebar} />
 
           <View style={styles.sidebarContainer}>
-
-            {/* Dynamic User Profile Banner at Top */}
+            {/* User Profile Header */}
             <View style={styles.profileHeader}>
               <TouchableOpacity onPress={toggleSidebar} style={styles.closeTouch} activeOpacity={0.7}>
                 <MaterialIcons name="close" size={20} color="#64748b" />
@@ -102,13 +111,12 @@ export default function Header() {
               </View>
             </View>
 
-            {/* Scrollable Navigation List with Sections */}
+            {/* Navigation List */}
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sidebarScroll}>
-
               <Text style={styles.sectionHeaderLabel}>Main Navigation</Text>
-              <SidebarItem icon="home" label="Home" onPress={() => { toggleSidebar(); navigation.navigate('MainTabs', { screen: 'Home' }); }} />
-              <SidebarItem icon="menu-book" label="Courses" onPress={() => { toggleSidebar(); navigation.navigate('MainTabs', { screen: 'Courses' }); }} />
-              <SidebarItem icon="file-document-edit" label="Admission" iconType="community" onPress={() => { toggleSidebar(); navigation.navigate('MainTabs', { screen: 'Admission' }); }} />
+              <SidebarItem icon="home" label="Home" onPress={() => navigateTo('MainTabs', { screen: 'Home' })} />
+              <SidebarItem icon="menu-book" label="Courses" onPress={() => navigateTo('MainTabs', { screen: 'Courses' })} />
+              <SidebarItem icon="file-document-edit" label="Admission" iconType="community" onPress={() => navigateTo('MainTabs', { screen: 'Admission' })} />
 
               <Text style={styles.sectionHeaderLabel}>Student Zone & Updates</Text>
               <SidebarItem icon="notifications-none" label="Notices" />
@@ -117,22 +125,22 @@ export default function Header() {
               <SidebarItem icon="book-open-page-variant" label="Study Material" iconType="community" />
               <SidebarItem icon="perm-media" label="Gallery" />
 
+              <Text style={styles.sectionHeaderLabel}>Verification Center</Text>
+              <SidebarItem icon="verified" label="Certificate Verification" onPress={() => navigateTo('Verification')} />
+
               <Text style={styles.sectionHeaderLabel}>Our Team</Text>
-              <SidebarItem icon="account-group" iconType="community" label="Our Team" onPress={() => { toggleSidebar(); navigation.navigate('TeamScreen'); }}/>
+              <SidebarItem icon="account-group" iconType="community" label="Our Team" onPress={() => navigateTo('TeamScreen')} />
 
               <Text style={styles.sectionHeaderLabel}>Services & Support</Text>
-              <SidebarItem icon="payment" label="Fee Payment" onPress={() => { toggleSidebar(); navigation.navigate('FeePage'); }} />
-              <SidebarItem icon="file-document-edit-outline" label="Online Admission" iconType="community" onPress={() => { toggleSidebar(); navigation.navigate('MainTabs', { screen: 'Admission' }); }} />
-
-              <SidebarItem icon="headset-mic" label="Contact Us" onPress={() => { toggleSidebar(); navigation.navigate('ContactUs'); }} />
-
-              <SidebarItem icon="settings" label="Settings" />
-              <SidebarItem icon="help-outline" label="Help & Support" onPress={() => { toggleSidebar(); navigation.navigate('ContactUs'); }} />
+              <SidebarItem icon="payment" label="Fee Payment" onPress={() => navigateTo('FeePage')} />
+              <SidebarItem icon="file-document-edit-outline" label="Online Admission" iconType="community" onPress={() => navigateTo('MainTabs', { screen: 'Admission' })} />
+              <SidebarItem icon="headset-mic" label="Contact Us" onPress={() => navigateTo('ContactUs')} />
+              <SidebarItem icon="help-outline" label="Help & Support" onPress={() => navigateTo('ContactUs')} />
               
               {user ? (
                 <SidebarItem icon="logout" label="Logout" color="#ef4444" onPress={handleLogout} />
               ) : (
-                <SidebarItem icon="login" label="Login" color="#0284c7" onPress={() => { toggleSidebar(); navigation.navigate('Login'); }} />
+                <SidebarItem icon="login" label="Login" color="#0284c7" onPress={() => navigateTo('Login')} />
               )}
 
               <View style={styles.sidebarFooter}>
@@ -352,7 +360,7 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     fontSize: 11,
   },
-    backdropTouch: {
+  backdropTouch: {
     flex: 1,
   },
 });

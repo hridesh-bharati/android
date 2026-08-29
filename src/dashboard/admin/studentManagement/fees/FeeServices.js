@@ -1,4 +1,4 @@
-// src/dashboard/admin/studentManagement/fees/FeeServices.js
+// src/dashboard/admin/studentManagement/fees/FeeServices.js react nativ code
 import { db } from "../../../../services/firebase";
 import { collection, addDoc, serverTimestamp, doc, deleteDoc } from "firebase/firestore";
 import { Alert } from "react-native";

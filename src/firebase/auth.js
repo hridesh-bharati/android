@@ -1,10 +1,13 @@
-// src/firebase/auth.js
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+  signInWithPopup,
+  signInWithCredential
 } from "firebase/auth";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../services/firebase";
@@ -43,6 +46,63 @@ export const signupWithEmail = async (email, password, role = "user") => {
 /* LOGIN */
 export const loginWithEmail = async (email, password) => {
   return signInWithEmailAndPassword(auth, email, password);
+};
+
+/* GOOGLE LOGIN / SIGNUP */
+export const loginWithGoogleAuth = async (idToken) => {
+  let user;
+  if (idToken) {
+    const credential = GoogleAuthProvider.credential(idToken);
+    const res = await signInWithCredential(auth, credential);
+    user = res.user;
+  } else {
+    const provider = new GoogleAuthProvider();
+    const res = await signInWithPopup(auth, provider);
+    user = res.user;
+  }
+
+  const userRef = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) {
+    const email = user.email ? user.email.toLowerCase().trim() : "";
+    const role = ADMIN_ALLOWED_EMAILS.includes(email) ? "admin" : "user";
+    
+    await setDoc(userRef, {
+      email,
+      role,
+      name: user.displayName || email.split('@')[0],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    });
+  }
+
+  return user;
+};
+
+/* GITHUB LOGIN / SIGNUP */
+export const loginWithGithubAuth = async () => {
+  const provider = new GithubAuthProvider();
+  const res = await signInWithPopup(auth, provider);
+  const user = res.user;
+
+  const userRef = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) {
+    const email = user.email ? user.email.toLowerCase().trim() : "";
+    const role = ADMIN_ALLOWED_EMAILS.includes(email) ? "admin" : "user";
+    
+    await setDoc(userRef, {
+      email,
+      role,
+      name: user.displayName || email.split('@')[0],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    });
+  }
+
+  return user;
 };
 
 /* GET ROLE */
