@@ -1,3 +1,4 @@
+// src/screens/CoursesScreen.js
 import React, { useState, useRef } from 'react';
 import {
   StyleSheet,
@@ -9,35 +10,185 @@ import {
   Animated,
   Modal,
   Pressable,
-  StatusBar,
   TextInput,
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { COLORS } from '../constants/theme';
 
 const { width, height } = Dimensions.get('window');
 
 const COURSES_DATA = [
-  { id: '1', name: 'B.Sc. (Computer Science)', duration: '3 Years', level: 'Graduate', icon: 'computer', color: '#3b82f6', description: 'Bachelor degree in Computer Science with practical training' },
-  { id: '2', name: 'BCA', duration: '3 Years', level: 'Graduate', icon: 'code', color: '#8b5cf6', description: 'Bachelor of Computer Applications with industry focus' },
-  { id: '3', name: 'MCA', duration: '2 Years', level: 'Post Graduate', icon: 'terminal', color: '#10b981', description: 'Master of Computer Applications for advanced learning' },
-  { id: '4', name: 'PGDCA', duration: '1 Year', level: 'Post Graduate', icon: 'storage', color: '#f59e0b', description: 'Post Graduate Diploma in Computer Applications' },
-  { id: '5', name: 'DCA', duration: '6 Months', level: 'Diploma', icon: 'desktop-windows', color: '#ef4444', description: 'Diploma in Computer Applications for beginners' },
-  { id: '6', name: 'Programming with Python', duration: '3 Months', level: 'Certificate', icon: 'code', color: '#06b6d4', description: 'Complete Python programming with real-world projects' },
-  { id: '7', name: 'Web Development', duration: '4 Months', level: 'Certificate', icon: 'language', color: '#f97316', description: 'Full stack web development with HTML, CSS, JavaScript' },
-  { id: '8', name: 'Data Science & AI', duration: '6 Months', level: 'Certificate', icon: 'analytics', color: '#ec4899', description: 'Data Science, Machine Learning & Artificial Intelligence' },
-  { id: '9', name: 'Tally with GST', duration: '3 Months', level: 'Certificate', icon: 'calculate', color: '#14b8a6', description: 'Complete Tally ERP 9 with GST and Accounting' },
-  { id: '10', name: 'MS Office & Computer Basics', duration: '2 Months', level: 'Basic', icon: 'laptop', color: '#6366f1', description: 'Essential computer skills and MS Office applications' },
+  {
+    id: '0',
+    name: 'ADCA+',
+    description: 'Advanced Diploma in Computer Applications+ - An elite 18-month program including Advanced Web Development and Python',
+    duration: '18 Months',
+    level: 'Diploma',
+    icon: 'computer',
+    color: '#3b82f6',
+    category: 'computer',
+  },
+  {
+    id: '1',
+    name: 'ADCA',
+    description: 'Advanced Diploma in Computer Applications - Comprehensive 15-month computer course covering essential software and IT skills',
+    duration: '15 Months',
+    level: 'Diploma',
+    icon: 'desktop-windows',
+    color: '#8b5cf6',
+    category: 'computer',
+  },
+  {
+    id: '2',
+    name: 'DCA',
+    description: 'Diploma in Computer Applications',
+    duration: '12 Months',
+    level: 'Diploma',
+    icon: 'storage',
+    color: '#10b981',
+    category: 'diploma',
+  },
+  {
+    id: '3',
+    name: 'DCAA',
+    description: 'Diploma in Computer Applications & Accountancy',
+    duration: '6 Months',
+    level: 'Diploma',
+    icon: 'calculate',
+    color: '#f59e0b',
+    category: 'diploma',
+  },
+  {
+    id: '13',
+    name: 'DTP',
+    description: 'Diploma in Desktop Publishing',
+    duration: '6 Months',
+    level: 'Diploma',
+    icon: 'palette',
+    color: '#ef4444',
+    category: 'diploma',
+  },
+  {
+    id: '26',
+    name: 'CDTP',
+    description: 'Certificate in Desktop Publishing',
+    duration: '3 Months',
+    level: 'Certificate',
+    icon: 'brush',
+    color: '#06b6d4',
+    category: 'certification',
+  },
+  {
+    id: '5',
+    name: 'CCA',
+    description: 'Certificate in Computer',
+    duration: '3 Months',
+    level: 'Certificate',
+    icon: 'laptop',
+    color: '#f97316',
+    category: 'certification',
+  },
+  {
+    id: '6',
+    name: 'CAC',
+    description: 'Certificate in Accounting Course',
+    duration: '3 Months',
+    level: 'Certificate',
+    icon: 'receipt-long',
+    color: '#ec4899',
+    category: 'certification',
+  },
+  {
+    id: '14',
+    name: 'CCC',
+    description: 'Course on Computer Concepts',
+    duration: '3 Months',
+    level: 'Certificate',
+    icon: 'verified',
+    color: '#14b8a6',
+    category: 'nielit',
+  },
+  {
+    id: '15',
+    name: 'O LEVEL',
+    description: 'NIELIT O Level - IT foundation course equivalent to foundation level',
+    duration: '12 Months',
+    level: 'Advanced',
+    icon: 'school',
+    color: '#6366f1',
+    category: 'advanced',
+  },
+  {
+    id: '16',
+    name: 'DBI',
+    description: 'Diploma in Information Technology & Business Intelligence',
+    duration: '6 Months',
+    level: 'Diploma',
+    icon: 'insights',
+    color: '#3b82f6',
+    category: 'diploma',
+  },
+  {
+    id: '17',
+    name: 'C',
+    description: 'Certificate in C Programming',
+    duration: '2 Months',
+    level: 'Certificate',
+    icon: 'code',
+    color: '#8b5cf6',
+    category: 'programming',
+  },
+  {
+    id: '18',
+    name: 'C++',
+    description: 'Object-Oriented Programming with C++',
+    duration: '3 Months',
+    level: 'Certificate',
+    icon: 'terminal',
+    color: '#10b981',
+    category: 'programming',
+  },
+  {
+    id: '19',
+    name: 'Python',
+    description: 'Professional Python Programming',
+    duration: '4 Months',
+    level: 'Certificate',
+    icon: 'data-object',
+    color: '#f59e0b',
+    category: 'programming',
+  },
+  {
+    id: '20',
+    name: 'JavaScript',
+    description: 'Modern JavaScript (ES6+)',
+    duration: '3 Months',
+    level: 'Certificate',
+    icon: 'javascript',
+    color: '#ef4444',
+    category: 'programming',
+  },
+  {
+    id: '21',
+    name: 'TypeScript',
+    description: 'Mastering TypeScript - Adding Type Safety to JavaScript for large-scale applications',
+    duration: '2 Months',
+    level: 'Certificate',
+    icon: 'code',
+    color: '#06b6d4',
+    category: 'programming',
+  },
 ];
 
 const CATEGORIES_DATA = [
   { id: 'all', label: 'All Courses', icon: 'apps', color: '#3b82f6' },
-  { id: 'short', label: 'Short Term', icon: 'timer', color: '#f59e0b' },
-  { id: 'diploma', label: 'Diploma', icon: 'school', color: '#ef4444' },
-  { id: 'certification', label: 'Certification', icon: 'verified', color: '#10b981' },
-  { id: 'advanced', label: 'Advanced', icon: 'stars', color: '#8b5cf6' },
+  { id: 'computer', label: 'Computer (ADCA/+)', icon: 'computer', color: '#8b5cf6' },
+  { id: 'diploma', label: 'Diploma', icon: 'school', color: '#10b981' },
+  { id: 'certification', label: 'Certificate', icon: 'verified', color: '#f59e0b' },
+  { id: 'nielit', label: 'NIELIT', icon: 'domain', color: '#ef4444' },
+  { id: 'programming', label: 'Programming', icon: 'code', color: '#06b6d4' },
+  { id: 'advanced', label: 'Advanced', icon: 'stars', color: '#6366f1' },
 ];
 
 export default function CoursesScreen({ navigation }) {
@@ -45,7 +196,7 @@ export default function CoursesScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [bottomSheetVisible, setBottomSheetVisible] = useState(false);
-  
+
   const searchAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(height)).current;
 
@@ -68,24 +219,15 @@ export default function CoursesScreen({ navigation }) {
   };
 
   const filteredCourses = COURSES_DATA.filter(course => {
-    const matchesCategory = selectedCategory === 'all' || 
-      (selectedCategory === 'short' && course.duration.includes('Months') && parseInt(course.duration, 10) <= 3) ||
-      (selectedCategory === 'diploma' && course.level === 'Diploma') ||
-      (selectedCategory === 'certification' && course.level === 'Certificate') ||
-      (selectedCategory === 'advanced' && course.level === 'Post Graduate');
-     
+    const matchesCategory = selectedCategory === 'all' || course.category === selectedCategory;
     const matchesSearch = course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         course.description.toLowerCase().includes(searchQuery.toLowerCase());
+      course.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
   const getCategoryCount = (categoryId) => {
     if (categoryId === 'all') return COURSES_DATA.length;
-    if (categoryId === 'short') return COURSES_DATA.filter(c => c.duration.includes('Months') && parseInt(c.duration, 10) <= 3).length;
-    if (categoryId === 'diploma') return COURSES_DATA.filter(c => c.level === 'Diploma').length;
-    if (categoryId === 'certification') return COURSES_DATA.filter(c => c.level === 'Certificate').length;
-    if (categoryId === 'advanced') return COURSES_DATA.filter(c => c.level === 'Post Graduate').length;
-    return 0;
+    return COURSES_DATA.filter(c => c.category === categoryId).length;
   };
 
   const handleEnrollPress = (course) => {
@@ -96,20 +238,19 @@ export default function CoursesScreen({ navigation }) {
     <View style={styles.courseCard}>
       <View style={styles.cardLeft}>
         <View style={[styles.iconContainer, { backgroundColor: `${course.color}15` }]}>
-          <MaterialIcons name={course.icon} size={28} color={course.color} />
+          <MaterialIcons name={course.icon} size={26} color={course.color} />
         </View>
       </View>
-      
       <View style={styles.flex1}>
         <View style={styles.rowBetween}>
-          <Text style={styles.courseName} numberOfLines={1}>{course.name}</Text>
+          <Text numberOfLines={1} style={styles.courseName}>{course.name}</Text>
           <View style={styles.durationBadge}>
             <MaterialIcons name="schedule" size={12} color="#0284c7" />
             <Text style={styles.durationText}>{course.duration}</Text>
           </View>
         </View>
         
-        <Text style={styles.courseDescription} numberOfLines={2}>
+        <Text numberOfLines={2} style={styles.courseDescription}>
           {course.description}
         </Text>
         
@@ -118,7 +259,7 @@ export default function CoursesScreen({ navigation }) {
             <Text style={[styles.levelText, { color: course.color }]}>{course.level}</Text>
           </View>
           <TouchableOpacity 
-            style={[styles.enrollBtn, { backgroundColor: course.color }]}
+            style={[styles.enrollBtn, { backgroundColor: course.color }]} 
             onPress={() => handleEnrollPress(course)}
             activeOpacity={0.85}
           >
@@ -132,7 +273,9 @@ export default function CoursesScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      {/* Background Water Ambient Blobs for Glassmorphism Design */}
+      <View style={styles.waterBlobTop} />
+      <View style={styles.waterBlobBottom} />
 
       {/* Modern Glassmorphic Top Bar */}
       <View style={styles.topBar}>
@@ -146,10 +289,10 @@ export default function CoursesScreen({ navigation }) {
           </View>
         </View>
         <View style={styles.topBarActions}>
-          <TouchableOpacity style={styles.topBarIconBtn} onPress={toggleSearch} activeOpacity={0.7}>
+          <TouchableOpacity activeOpacity={0.7} onPress={toggleSearch} style={styles.topBarIconBtn}>
             <MaterialIcons name={isSearchVisible ? "close" : "search"} size={20} color="#0f172a" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.topBarFilterBtn} onPress={openBottomSheet} activeOpacity={0.8}>
+          <TouchableOpacity activeOpacity={0.8} onPress={openBottomSheet} style={styles.topBarFilterBtn}>
             <MaterialIcons name="tune" size={20} color="#0284c7" />
           </TouchableOpacity>
         </View>
@@ -159,29 +302,26 @@ export default function CoursesScreen({ navigation }) {
       {isSearchVisible && (
         <Animated.View 
           style={[
-            styles.searchContainer,
+            styles.searchContainer, 
             {
               opacity: searchAnim,
-              maxHeight: searchAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 65],
-              }),
-            },
+              maxHeight: searchAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 65] }),
+            }
           ]}
         >
           <View style={styles.searchGlassContainer}>
             <MaterialIcons name="search" size={18} color="#64748b" />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search by course name or keyword..."
-              placeholderTextColor="#94a3b8"
+            <TextInput 
+              autoFocus={true} 
+              onChangeText={setSearchQuery} 
+              placeholder="Search by course name or keyword..." 
+              placeholderTextColor="#94a3b8" 
+              style={styles.searchInput} 
               value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoFocus={true}
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <MaterialIcons name="cancel" size={18} color="#94a3b8" />
+                <MaterialIcons name="cancel" size={18} color="#64748b" />
               </TouchableOpacity>
             )}
           </View>
@@ -189,8 +329,8 @@ export default function CoursesScreen({ navigation }) {
       )}
 
       {/* Course List */}
-      <FlatList
-        data={filteredCourses}
+      <FlatList 
+        data={filteredCourses} 
         renderItem={({ item }) => <CourseCard course={item} />}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
@@ -215,45 +355,34 @@ export default function CoursesScreen({ navigation }) {
       />
 
       {/* Bottom Sheet Offcanvas Modal */}
-      <Modal
-        transparent={true}
-        visible={bottomSheetVisible}
-        onRequestClose={closeBottomSheet}
-        animationType="fade"
-      >
-        <Pressable style={styles.sheetOverlay} onPress={closeBottomSheet}>
-          <Animated.View 
-            style={[
-              styles.bottomSheet,
-              { transform: [{ translateY: slideAnim }] },
-            ]}
-          >
-            <Pressable style={styles.flex1} onPress={(e) => e.stopPropagation()}>
+      <Modal animationType="fade" onRequestClose={closeBottomSheet} transparent={true} visible={bottomSheetVisible} statusBarTranslucent>
+        <Pressable onPress={closeBottomSheet} style={styles.sheetOverlay}>
+          <Animated.View style={[styles.bottomSheet, { transform: [{ translateY: slideAnim }] }]}>
+            <Pressable onPress={(e) => e.stopPropagation()} style={styles.flex1}>
               <View style={styles.dragHandleContainer}>
                 <View style={styles.dragHandle} />
               </View>
 
               <View style={styles.sheetHeader}>
                 <Text style={styles.sheetMainTitle}>Select Course Category</Text>
-                <TouchableOpacity style={styles.sheetCloseBtn} onPress={closeBottomSheet} activeOpacity={0.7}>
+                <TouchableOpacity activeOpacity={0.7} onPress={closeBottomSheet} style={styles.sheetCloseBtn}>
                   <MaterialIcons name="close" size={18} color="#64748b" />
                 </TouchableOpacity>
               </View>
 
-              {/* Non-scrollable list container to completely prevent scrollbar */}
-              <View style={styles.sheetBody}>
+              <ScrollView style={styles.sheetBody} showsVerticalScrollIndicator={false}>
                 {CATEGORIES_DATA.map((category) => {
                   const count = getCategoryCount(category.id);
                   const isActive = selectedCategory === category.id;
 
                   return (
-                    <TouchableOpacity
-                      key={category.id}
-                      style={[styles.sheetItem, isActive && styles.sheetItemActive]}
+                    <TouchableOpacity 
+                      key={category.id} 
                       onPress={() => {
                         setSelectedCategory(category.id);
                         closeBottomSheet();
-                      }}
+                      }} 
+                      style={[styles.sheetItem, isActive && styles.sheetItemActive]}
                       activeOpacity={0.8}
                     >
                       <View style={[styles.iconContainerSm, { backgroundColor: isActive ? '#0284c7' : `${category.color}15` }]}>
@@ -269,7 +398,7 @@ export default function CoursesScreen({ navigation }) {
                     </TouchableOpacity>
                   );
                 })}
-              </View>
+              </ScrollView>
 
               <View style={styles.sheetFooter}>
                 <Text style={styles.footerText}>Drishtee Computer Centre • Explore & Excel</Text>
@@ -285,7 +414,29 @@ export default function CoursesScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f0f6ff',
+    position: 'relative',
+  },
+  waterBlobTop: {
+    position: 'absolute',
+    top: -40,
+    right: -40,
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+    backgroundColor: '#38bdf8',
+    opacity: 0.16,
+    transform: [{ scale: 1.4 }],
+  },
+  waterBlobBottom: {
+    position: 'absolute',
+    bottom: -40,
+    left: -40,
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: '#34d399',
+    opacity: 0.14,
   },
   flex1: {
     flex: 1,
@@ -296,8 +447,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconContainer: {
-    width: 54,
-    height: 54,
+    width: 52,
+    height: 52,
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
@@ -318,13 +469,14 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 44 : 12,
     paddingBottom: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.4)',
-    shadowColor: '#000',
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#ffffff',
+    shadowColor: '#0ea5e9',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 4,
+    zIndex: 10,
   },
   topBarLeft: {
     flexDirection: 'row',
@@ -339,21 +491,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(240, 249, 255, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#0284c7',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
   },
   topBarTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '900',
     color: '#0f172a',
     letterSpacing: 0.2,
   },
   topBarSubtitle: {
     fontSize: 11,
     color: '#64748b',
-    fontWeight: '500',
+    fontWeight: '700',
   },
   topBarActions: {
     flexDirection: 'row',
@@ -367,6 +517,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(241, 245, 249, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   topBarFilterBtn: {
     width: 38,
@@ -375,22 +527,27 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(240, 249, 255, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
   },
   searchContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     overflow: 'hidden',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(226, 232, 240, 0.5)',
+    borderBottomColor: 'rgba(226, 232, 240, 0.8)',
+    zIndex: 9,
   },
   searchGlassContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(241, 245, 249, 0.8)',
+    backgroundColor: 'rgba(241, 245, 249, 0.9)',
     marginHorizontal: 16,
     marginVertical: 10,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
   },
   searchInput: {
     flex: 1,
@@ -398,7 +555,7 @@ const styles = StyleSheet.create({
     color: '#0f172a',
     paddingVertical: 0,
     paddingHorizontal: 8,
-    fontWeight: '400',
+    fontWeight: '600',
   },
   categoryLabelContainer: {
     flexDirection: 'row',
@@ -406,22 +563,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 4,
     marginBottom: 10,
+    paddingHorizontal: 2,
   },
   activeCategoryPill: {
-    backgroundColor: 'rgba(240, 249, 255, 0.9)',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
   },
   categoryLabel: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '900',
     color: '#0284c7',
   },
   categoryCount: {
     fontSize: 12,
     color: '#64748b',
-    fontWeight: '600',
+    fontWeight: '800',
   },
   coursesList: {
     paddingHorizontal: 16,
@@ -429,15 +589,17 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   courseCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
     borderRadius: 18,
     padding: 16,
     marginBottom: 14,
     flexDirection: 'row',
-    shadowColor: '#64748b',
+    borderWidth: 1.5,
+    borderColor: '#ffffff',
+    shadowColor: '#0ea5e9',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
+    shadowOpacity: 0.1,
+    shadowRadius: 14,
     elevation: 3,
   },
   cardLeft: {
@@ -446,7 +608,7 @@ const styles = StyleSheet.create({
   },
   courseName: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '900',
     color: '#0f172a',
     flex: 1,
     marginRight: 6,
@@ -458,11 +620,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
     gap: 4,
   },
   durationText: {
     fontSize: 10.5,
-    fontWeight: '600',
+    fontWeight: '800',
     color: '#0284c7',
   },
   courseDescription: {
@@ -470,34 +634,35 @@ const styles = StyleSheet.create({
     color: '#475569',
     marginBottom: 12,
     lineHeight: 17,
+    fontWeight: '600',
   },
   levelBadge: {
-    paddingHorizontal: 9,
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 6,
   },
   levelText: {
     fontSize: 9.5,
-    fontWeight: '700',
+    fontWeight: '900',
     textTransform: 'uppercase',
   },
   enrollBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 13,
+    paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 8,
+    borderRadius: 10,
     gap: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
     elevation: 2,
   },
   enrollBtnText: {
     color: '#ffffff',
     fontSize: 11.5,
-    fontWeight: '600',
+    fontWeight: '900',
   },
   emptyContainer: {
     flex: 1,
@@ -508,7 +673,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '900',
     color: '#0f172a',
     marginTop: 12,
   },
@@ -517,16 +682,18 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     marginTop: 4,
     textAlign: 'center',
+    fontWeight: '700',
   },
   sheetOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    backgroundColor: 'rgba(7, 30, 61, 0.65)',
     justifyContent: 'flex-end',
   },
   bottomSheet: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
+    maxHeight: height * 0.75,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     elevation: 25,
     shadowColor: '#000',
@@ -555,13 +722,13 @@ const styles = StyleSheet.create({
   },
   sheetMainTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '900',
     color: '#0f172a',
   },
   sheetCloseBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#f1f5f9',
     justifyContent: 'center',
     alignItems: 'center',
@@ -581,23 +748,26 @@ const styles = StyleSheet.create({
   },
   sheetItemActive: {
     backgroundColor: 'rgba(240, 249, 255, 0.9)',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
   },
   sheetItemLabel: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#334155',
   },
   sheetItemLabelActive: {
     color: '#0284c7',
-    fontWeight: '700',
+    fontWeight: '900',
   },
   sheetItemCount: {
     fontSize: 11,
     color: '#94a3b8',
     marginTop: 1,
+    fontWeight: '700',
   },
   sheetFooter: {
-    paddingTop: 10,
+    paddingTop: 12,
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: 'rgba(241, 245, 249, 0.8)',
@@ -606,6 +776,6 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 11,
     color: '#64748b',
-    fontWeight: '500',
+    fontWeight: '700',
   },
 });

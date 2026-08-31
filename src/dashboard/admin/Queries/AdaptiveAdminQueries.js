@@ -1,5 +1,4 @@
 // src/dashboard/admin/Queries/AdaptiveAdminQueries.js
-
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -26,30 +25,20 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
-const COLORS = {
-  primary: "#0788CF",
-  primaryDark: "#056FA9",
-  navy: "#092B52",
-  background: "#F4F7FB",
-  white: "#FFFFFF",
-  text: "#12233F",
-  textDark: "#0B1F3A",
-  textMuted: "#71819A",
-  border: "#E5ECF4",
-  blueLight: "#EAF6FF",
-  blueBorder: "#BFE5FA",
-  green: "#13A66A",
-  greenLight: "#E9FAF2",
-  greenBorder: "#BCEED6",
-  red: "#EF4444",
-  redLight: "#FFF0F0",
-  redBorder: "#FFD0D0",
-  orange: "#F59E0B",
-  orangeLight: "#FFF6E5",
-  purple: "#7C4DFF",
-  purpleLight: "#F1ECFF",
-  cyan: "#0099CC",
-  cyanLight: "#E8F8FF",
+const C = {
+  primary: "#0284c7",
+  dark: "#071e3d",
+  bg: "#f0f6ff",
+  white: "#ffffff",
+  text: "#0f172a",
+  gray: "#64748b",
+  border: "#ffffff", // 👈 White borders for all cards
+  success: "#10b981",
+  successBg: "#ecfdf5",
+  danger: "#ef4444",
+  dangerBg: "#fef2f2",
+  warning: "#f59e0b",
+  warningBg: "#fffbeb",
 };
 
 export default function AdaptiveAdminQueries() {
@@ -57,13 +46,11 @@ export default function AdaptiveAdminQueries() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
-  const [modalItem, setModalItem] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    const queriesRef = collection(db, "studentQueries");
-    const q = query(queriesRef, orderBy("timestamp", "desc"));
-
+    const q = query(collection(db, "studentQueries"), orderBy("timestamp", "desc"));
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
@@ -79,48 +66,46 @@ export default function AdaptiveAdminQueries() {
         setLoading(false);
       },
       (error) => {
-        console.error("Firestore Sync Error:", error);
+        console.error("Firestore Error:", error);
         setLoading(false);
       }
     );
-
     return unsubscribe;
   }, []);
 
-  const totalCount = data.length;
-  const newCount = data.filter((item) => item.status !== "reviewed").length;
-  const solvedCount = data.filter((item) => item.status === "reviewed").length;
-
-  const todayCount = useMemo(() => {
+  const counts = useMemo(() => {
     const today = new Date();
-    return data.filter((item) => {
-      if (!item.dt) return false;
-      return (
-        item.dt.getDate() === today.getDate() &&
-        item.dt.getMonth() === today.getMonth() &&
-        item.dt.getFullYear() === today.getFullYear()
-      );
-    }).length;
+    let newC = 0, solvedC = 0, todayC = 0;
+    
+    data.forEach(item => {
+      if (item.status === "reviewed") solvedC++;
+      else newC++;
+
+      if (item.dt && 
+          item.dt.getDate() === today.getDate() &&
+          item.dt.getMonth() === today.getMonth() &&
+          item.dt.getFullYear() === today.getFullYear()) {
+        todayC++;
+      }
+    });
+
+    return { total: data.length, new: newC, solved: solvedC, today: todayC };
   }, [data]);
 
   const filteredData = useMemo(() => {
     const keyword = search.trim().toLowerCase();
     return data.filter((item) => {
-      let matchesFilter = true;
-      if (filter === "new") matchesFilter = item.status !== "reviewed";
-      if (filter === "solved") matchesFilter = item.status === "reviewed";
+      if (filter === "new" && item.status === "reviewed") return false;
+      if (filter === "solved" && item.status !== "reviewed") return false;
       if (filter === "today") {
-        if (!item.dt) {
-          matchesFilter = false;
-        } else {
-          const today = new Date();
-          matchesFilter =
-            item.dt.getDate() === today.getDate() &&
-            item.dt.getMonth() === today.getMonth() &&
-            item.dt.getFullYear() === today.getFullYear();
-        }
+        if (!item.dt) return false;
+        const today = new Date();
+        if (
+          item.dt.getDate() !== today.getDate() ||
+          item.dt.getMonth() !== today.getMonth() ||
+          item.dt.getFullYear() !== today.getFullYear()
+        ) return false;
       }
-      if (!matchesFilter) return false;
       if (!keyword) return true;
 
       return (
@@ -136,12 +121,7 @@ export default function AdaptiveAdminQueries() {
   const formatDate = (date) => {
     if (!date) return "Just now";
     return date.toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
+      day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true,
     });
   };
 
@@ -156,11 +136,11 @@ export default function AdaptiveAdminQueries() {
   };
 
   const handleRemove = async () => {
-    if (!modalItem) return;
+    if (!deleteId) return;
     try {
       setActionLoading(true);
-      await deleteDoc(doc(db, "studentQueries", modalItem.id));
-      setModalItem(null);
+      await deleteDoc(doc(db, "studentQueries", deleteId));
+      setDeleteId(null);
     } catch (error) {
       console.error("Delete failed:", error);
     } finally {
@@ -169,269 +149,179 @@ export default function AdaptiveAdminQueries() {
   };
 
   const handleCall = async (mobile) => {
-    if (!mobile) return;
-    try {
-      await Linking.openURL(`tel:${String(mobile).replace(/\s+/g, "")}`);
-    } catch (error) {
-      console.error("Call failed:", error);
-    }
+    if (mobile) Linking.openURL(`tel:${String(mobile).replace(/\s+/g, "")}`);
   };
 
   const handleWhatsApp = async (mobile) => {
     if (!mobile) return;
     let phone = String(mobile).replace(/\D/g, "");
     if (phone.length === 10) phone = `91${phone}`;
-    try {
-      await Linking.openURL(`https://wa.me/${phone}`);
-    } catch (error) {
-      console.error("WhatsApp failed:", error);
-    }
-  };
-
-  const StatCard = ({ icon, count, label, background, iconBackground, iconColor, onPress }) => (
-    <Pressable
-      onPress={onPress}
-      android_ripple={{ color: "#E2E8F0" }}
-      style={({ pressed }) => [styles.statCard, { backgroundColor: background }, pressed && styles.pressed]}
-    >
-      <View style={[styles.statIcon, { backgroundColor: iconBackground }]}>
-        <MaterialIcons name={icon} size={25} color={iconColor} />
-      </View>
-      <Text style={styles.statNumber}>{count}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </Pressable>
-  );
-
-  const FilterTab = ({ filterKey, label, count }) => {
-    const active = filter === filterKey;
-    return (
-      <Pressable
-        onPress={() => setFilter(filterKey)}
-        style={[styles.filterTab, active && styles.filterTabActive]}
-      >
-        <Text style={[styles.filterTabText, active && styles.filterTabTextActive]}>{label}</Text>
-        <View style={[styles.filterCount, active && styles.filterCountActive]}>
-          <Text style={[styles.filterCountText, active && styles.filterCountTextActive]}>{count}</Text>
-        </View>
-      </Pressable>
-    );
-  };
-
-  const renderQuery = ({ item }) => {
-    const solved = item.status === "reviewed";
-
-    return (
-      <View style={[styles.queryCard, solved ? styles.queryCardSolved : styles.queryCardNew]}>
-        <View style={styles.queryTop}>
-          <View style={styles.userInfo}>
-            <Text style={styles.userName} numberOfLines={1}>{item.fullName || "Anonymous Student"}</Text>
-            <View style={styles.infoLine}>
-              <MaterialIcons name="access-time" size={13} color={COLORS.textMuted} />
-              <Text style={styles.timeText}>{formatDate(item.dt)}</Text>
-            </View>
-          </View>
-          <View style={[styles.statusBadge, solved ? styles.solvedBadge : styles.newBadge]}>
-            <View style={[styles.statusDot, { backgroundColor: solved ? COLORS.green : COLORS.red }]} />
-            <Text style={[styles.statusText, { color: solved ? COLORS.green : COLORS.red }]}>
-              {solved ? "SOLVED" : "NEW"}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.contactSection}>
-          {item.mobile ? (
-            <Pressable onPress={() => handleCall(item.mobile)} style={styles.contactItem}>
-              <MaterialIcons name="phone" size={16} color={COLORS.primary} />
-              <Text style={styles.contactText} numberOfLines={1}>{item.mobile}</Text>
-            </Pressable>
-          ) : null}
-          {item.email ? (
-            <View style={styles.contactItem}>
-              <MaterialIcons name="email" size={16} color={COLORS.textMuted} />
-              <Text style={[styles.contactText, { color: COLORS.textMuted }]} numberOfLines={1}>{item.email}</Text>
-            </View>
-          ) : null}
-        </View>
-
-        <View style={styles.subjectRow}>
-          <View style={styles.subjectIcon}>
-            <MaterialIcons name="chat" size={16} color={COLORS.primary} />
-          </View>
-          <Text style={styles.subject} numberOfLines={1}>{item.title || "Support Request"}</Text>
-        </View>
-
-        <View style={styles.messageBox}>
-          <Text style={styles.message} numberOfLines={3}>{item.query || "No message provided."}</Text>
-        </View>
-
-        <View style={styles.actionRow}>
-          {item.mobile ? (
-            <Pressable
-              onPress={() => handleWhatsApp(item.mobile)}
-              android_ripple={{ color: "#CDEEDC" }}
-              style={({ pressed }) => [styles.whatsappButton, pressed && styles.pressed]}
-            >
-              <MaterialIcons name="chat" size={17} color={COLORS.green} />
-              <Text style={styles.whatsappText}>WhatsApp</Text>
-            </Pressable>
-          ) : null}
-
-          <Pressable
-            onPress={() => handleToggle(item)}
-            android_ripple={{ color: "#CBE8FA" }}
-            style={({ pressed }) => [styles.solveButton, solved ? styles.reopenButton : styles.markButton, pressed && styles.pressed]}
-          >
-            <MaterialIcons name={solved ? "replay" : "check-circle"} size={17} color={solved ? COLORS.orange : COLORS.primary} />
-            <Text style={[styles.solveText, { color: solved ? COLORS.orange : COLORS.primary }]}>
-              {solved ? "Reopen" : "Mark Solved"}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => setModalItem(item)}
-            android_ripple={{ color: "#FFD5D5" }}
-            style={({ pressed }) => [styles.deleteButton, pressed && styles.pressed]}
-          >
-            <MaterialIcons name="delete-outline" size={20} color={COLORS.red} />
-          </Pressable>
-        </View>
-      </View>
-    );
+    Linking.openURL(`https://wa.me/${phone}`);
   };
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <View style={styles.loadingIcon}>
-          <MaterialIcons name="forum" size={30} color={COLORS.primary} />
-        </View>
-        <ActivityIndicator size="small" color={COLORS.primary} />
-        <Text style={styles.loadingTitle}>Loading Queries</Text>
-        <Text style={styles.loadingSubtitle}>Syncing with Firestore...</Text>
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={C.secondary} />
+        <Text style={styles.loadingText}>Syncing Queries...</Text>
       </View>
     );
   }
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <View style={styles.waterBlobTop} />
+      <View style={styles.waterBlobBottom} />
+
       <FlatList
         data={filteredData}
         keyExtractor={(item) => item.id}
-        renderItem={renderQuery}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
-          <>
+          <View>
             <View style={styles.header}>
-              <View style={styles.headerTop}>
-                <View>
-                  <Text style={styles.headerTitle}>Student Queries</Text>
-                  <Text style={styles.headerSubtitle}>Manage student contact requests</Text>
-                </View>
-                <View style={styles.headerIcon}>
-                  <MaterialIcons name="support-agent" size={26} color={COLORS.white} />
-                </View>
+              <View>
+                <Text style={styles.headerTitle}>Student Queries</Text>
+                <Text style={styles.headerSubtitle}>Manage support requests live</Text>
               </View>
-              <View style={styles.searchBox}>
-                <MaterialIcons name="search" size={21} color="#89A0B9" />
-                <TextInput
-                  value={search}
-                  onChangeText={setSearch}
-                  placeholder="Search name, mobile, email..."
-                  placeholderTextColor="#91A0B5"
-                  style={styles.searchInput}
-                  returnKeyType="search"
-                />
-                {search.length > 0 ? (
-                  <Pressable onPress={() => setSearch("")}>
-                    <MaterialIcons name="close" size={20} color="#8194AA" />
-                  </Pressable>
-                ) : null}
+              <View style={styles.headerIcon}>
+                <MaterialIcons name="support-agent" size={24} color={C.white} />
               </View>
+            </View>
+
+            <View style={styles.searchBox}>
+              <MaterialIcons name="search" size={20} color={C.gray} />
+              <TextInput
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Search name, mobile, email..."
+                placeholderTextColor={C.gray}
+                style={styles.searchInput}
+              />
+              {search.length > 0 && (
+                <Pressable onPress={() => setSearch("")}>
+                  <MaterialIcons name="close" size={18} color={C.gray} />
+                </Pressable>
+              )}
             </View>
 
             <View style={styles.statsGrid}>
-              <StatCard icon="forum" count={totalCount} label="Total Queries" background="#EEF8FF" iconBackground="#D5EEFF" iconColor={COLORS.primary} onPress={() => setFilter("all")} />
-              <StatCard icon="schedule" count={newCount} label="New Queries" background="#FFF8EB" iconBackground="#FFEBC5" iconColor={COLORS.orange} onPress={() => setFilter("new")} />
-              <StatCard icon="check-circle" count={solvedCount} label="Solved" background="#EDFBF4" iconBackground="#D5F5E4" iconColor={COLORS.green} onPress={() => setFilter("solved")} />
-              <StatCard icon="today" count={todayCount} label="Today" background="#F4EEFF" iconBackground="#E7DCFF" iconColor={COLORS.purple} onPress={() => setFilter("today")} />
-            </View>
-
-            <View style={styles.tabsContainer}>
-              <FilterTab filterKey="all" label="All" count={totalCount} />
-              <FilterTab filterKey="new" label="New" count={newCount} />
-              <FilterTab filterKey="solved" label="Solved" count={solvedCount} />
-              <FilterTab filterKey="today" label="Today" count={todayCount} />
-            </View>
-
-            <View style={styles.sectionHeader}>
-              <View>
-                <Text style={styles.sectionTitle}>Recent Queries</Text>
-                <Text style={styles.sectionSubtitle}>{filteredData.length} request{filteredData.length !== 1 ? "s" : ""} found</Text>
-              </View>
-              <View style={styles.liveBadge}>
-                <View style={styles.liveDot} />
-                <Text style={styles.liveText}>LIVE</Text>
-              </View>
-            </View>
-          </>
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <View style={styles.emptyIcon}>
-              <MaterialIcons name="inbox" size={42} color="#AAB8C8" />
-            </View>
-            <Text style={styles.emptyTitle}>No Queries Found</Text>
-            <Text style={styles.emptySubtitle}>There are no student queries in this section.</Text>
-            {search.length > 0 ? (
-              <Pressable onPress={() => setSearch("")} style={styles.clearSearchButton}>
-                <Text style={styles.clearSearchText}>Clear Search</Text>
+              <Pressable style={styles.statBox} onPress={() => setFilter("all")}>
+                <Text style={styles.statNumber}>{counts.total}</Text>
+                <Text style={styles.statLabel}>Total</Text>
               </Pressable>
-            ) : null}
+              <Pressable style={styles.statBox} onPress={() => setFilter("new")}>
+                <Text style={[styles.statNumber, { color: C.danger }]}>{counts.new}</Text>
+                <Text style={styles.statLabel}>New</Text>
+              </Pressable>
+              <Pressable style={styles.statBox} onPress={() => setFilter("solved")}>
+                <Text style={[styles.statNumber, { color: C.success }]}>{counts.solved}</Text>
+                <Text style={styles.statLabel}>Solved</Text>
+              </Pressable>
+              <Pressable style={styles.statBox} onPress={() => setFilter("today")}>
+                <Text style={[styles.statNumber, { color: C.warning }]}>{counts.today}</Text>
+                <Text style={styles.statLabel}>Today</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.tabsRow}>
+              {["all", "new", "solved", "today"].map((key) => (
+                <Pressable
+                  key={key}
+                  style={[styles.tabBtn, filter === key && styles.tabBtnActive]}
+                  onPress={() => setFilter(key)}
+                >
+                  <Text style={[styles.tabText, filter === key && styles.tabTextActive]}>
+                    {key.toUpperCase()}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
         }
-        ListFooterComponent={filteredData.length > 0 ? <View style={styles.footerSpace} /> : null}
-      />
-
-      <Modal
-        transparent
-        visible={Boolean(modalItem)}
-        animationType="fade"
-        onRequestClose={() => {
-          if (!actionLoading) setModalItem(null);
-        }}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <View style={styles.warningIcon}>
-              <MaterialIcons name="delete-outline" size={30} color={COLORS.red} />
-            </View>
-            <Text style={styles.modalTitle}>Delete Query?</Text>
-            <Text style={styles.modalDescription}>Are you sure you want to delete this query from the database?</Text>
-
-            {modalItem ? (
-              <View style={styles.modalUserBox}>
+        renderItem={({ item }) => {
+          const solved = item.status === "reviewed";
+          return (
+            <View style={[styles.queryCard, solved ? styles.cardSolved : styles.cardNew]}>
+              <View style={styles.cardTop}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.modalUserName} numberOfLines={1}>{modalItem.fullName || "Anonymous Student"}</Text>
-                  <Text style={styles.modalUserSubject} numberOfLines={1}>{modalItem.title || "Support Request"}</Text>
+                  <Text style={styles.userName} numberOfLines={1}>{item.fullName || "Anonymous"}</Text>
+                  <Text style={styles.timeText}>{formatDate(item.dt)}</Text>
+                </View>
+                <View style={[styles.badge, solved ? styles.badgeSuccess : styles.badgeDanger]}>
+                  <Text style={[styles.badgeText, { color: solved ? C.success : C.danger }]}>
+                    {solved ? "SOLVED" : "NEW"}
+                  </Text>
                 </View>
               </View>
-            ) : null}
 
-            <View style={styles.modalButtons}>
-              <Pressable disabled={actionLoading} onPress={() => setModalItem(null)} style={styles.cancelButton}>
-                <Text style={styles.cancelText}>Cancel</Text>
+              <View style={styles.contactRow}>
+                {item.mobile ? (
+                  <Pressable onPress={() => handleCall(item.mobile)} style={styles.contactChip}>
+                    <MaterialIcons name="phone" size={14} color={C.secondary} />
+                    <Text style={styles.contactText}>{item.mobile}</Text>
+                  </Pressable>
+                ) : null}
+                {item.email ? (
+                  <View style={styles.contactChip}>
+                    <MaterialIcons name="email" size={14} color={C.gray} />
+                    <Text style={[styles.contactText, { color: C.gray }]}>{item.email}</Text>
+                  </View>
+                ) : null}
+              </View>
+
+              <Text style={styles.subjectTitle} numberOfLines={1}>{item.title || "Support Request"}</Text>
+              <Text style={styles.messageText} numberOfLines={3}>{item.query || "No message provided."}</Text>
+
+              <View style={styles.actionRow}>
+                {item.mobile ? (
+                  <Pressable style={styles.whatsappBtn} onPress={() => handleWhatsApp(item.mobile)}>
+                    <MaterialIcons name="chat" size={15} color={C.success} />
+                    <Text style={styles.whatsappText}>WhatsApp</Text>
+                  </Pressable>
+                ) : null}
+
+                <Pressable
+                  style={[styles.statusBtn, solved ? styles.reopenBtn : styles.markBtn]}
+                  onPress={() => handleToggle(item)}
+                >
+                  <MaterialIcons name={solved ? "replay" : "check-circle"} size={15} color={solved ? C.warning : C.secondary} />
+                  <Text style={[styles.statusBtnText, { color: solved ? C.warning : C.secondary }]}>
+                    {solved ? "Reopen" : "Mark Solved"}
+                  </Text>
+                </Pressable>
+
+                <Pressable style={styles.deleteBtn} onPress={() => setDeleteId(item.id)}>
+                  <MaterialIcons name="delete-outline" size={18} color={C.danger} />
+                </Pressable>
+              </View>
+            </View>
+          );
+        }}
+        ListEmptyComponent={
+          <View style={styles.emptyBox}>
+            <MaterialIcons name="inbox" size={40} color={C.gray} />
+            <Text style={styles.emptyTitle}>No Queries Found</Text>
+          </View>
+        }
+      />
+
+      <Modal visible={!!deleteId} transparent animationType="fade" statusBarTranslucent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalIconBox}>
+              <MaterialIcons name="warning" size={26} color={C.danger} />
+            </View>
+            <Text style={styles.modalTitle}>Delete Query</Text>
+            <Text style={styles.modalSub}>Are you sure you want to remove this query record permanently?</Text>
+
+            <View style={styles.modalBtnRow}>
+              <Pressable style={styles.cancelBtn} onPress={() => setDeleteId(null)} disabled={actionLoading}>
+                <Text style={styles.cancelBtnText}>Cancel</Text>
               </Pressable>
-              <Pressable disabled={actionLoading} onPress={handleRemove} style={styles.confirmDeleteButton}>
-                {actionLoading ? (
-                  <ActivityIndicator size="small" color={COLORS.white} />
-                ) : (
-                  <>
-                    <MaterialIcons name="delete" size={18} color={COLORS.white} />
-                    <Text style={styles.confirmDeleteText}>Delete</Text>
-                  </>
-                )}
+              <Pressable style={styles.confirmBtn} onPress={handleRemove} disabled={actionLoading}>
+                {actionLoading ? <ActivityIndicator color={C.white} size="small" /> : <Text style={styles.confirmBtnText}>Delete</Text>}
               </Pressable>
             </View>
           </View>
@@ -442,153 +332,94 @@ export default function AdaptiveAdminQueries() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  listContent: { paddingBottom: 30 },
-  pressed: { opacity: 0.78 },
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 18,
-    paddingTop: 18,
-    paddingBottom: 22,
-    borderBottomLeftRadius: 26,
-    borderBottomRightRadius: 26,
-    elevation: 5,
-    shadowColor: "#0879B7",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.22,
-    shadowRadius: 8,
+  container: { flex: 1, backgroundColor: C.bg, position: 'relative' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: C.bg },
+  loadingText: { marginTop: 10, fontSize: 12, fontWeight: '800', color: C.gray },
+  
+  waterBlobTop: {
+    position: 'absolute', top: -30, right: -40, width: 250, height: 250,
+    borderRadius: 125, backgroundColor: '#38bdf8', opacity: 0.16, transform: [{ scale: 1.4 }]
   },
-  headerTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 18 },
-  headerTitle: { color: COLORS.white, fontSize: 25, fontWeight: "900", letterSpacing: -0.4 },
-  headerSubtitle: { color: "#DDF3FF", fontSize: 13, fontWeight: "500", marginTop: 3 },
-  headerIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.25)",
+  waterBlobBottom: {
+    position: 'absolute', bottom: -30, left: -40, width: 260, height: 260,
+    borderRadius: 130, backgroundColor: '#34d399', opacity: 0.14
   },
-  searchBox: {
-    height: 50,
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 15,
-    elevation: 3,
+
+  listContent: { padding: 14, paddingBottom: 40 },
+  
+  header: { 
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', 
+    backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: 14, borderRadius: 14, 
+    borderWidth: 1.5, borderColor: C.border, marginBottom: 10, elevation: 2 
   },
-  searchInput: { flex: 1, fontSize: 13, fontWeight: "600", color: COLORS.text, paddingHorizontal: 10, paddingVertical: 0 },
-  statsGrid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 14, paddingTop: 16, justifyContent: "space-between" },
-  statCard: {
-    width: "48.2%",
-    minHeight: 142,
-    borderRadius: 20,
-    padding: 15,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.8)",
-    elevation: 2,
-    shadowColor: "#71819A",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 5,
+  headerTitle: { fontSize: 16, fontWeight: '900', color: C.dark },
+  headerSubtitle: { fontSize: 11, fontWeight: '700', color: C.gray, marginTop: 2 },
+  headerIcon: { width: 38, height: 38, borderRadius: 10, backgroundColor: C.secondary, justifyContent: 'center', alignItems: 'center' },
+
+  searchBox: { 
+    flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+    borderRadius: 12, borderWidth: 1.5, borderColor: C.border, paddingHorizontal: 12, height: 42, marginBottom: 12, elevation: 1 
   },
-  statIcon: { width: 43, height: 43, borderRadius: 14, justifyContent: "center", alignItems: "center", marginBottom: 8 },
-  statNumber: { fontSize: 25, fontWeight: "900", color: COLORS.textDark },
-  statLabel: { fontSize: 11, fontWeight: "700", color: COLORS.textMuted, marginTop: 2 },
-  tabsContainer: {
-    flexDirection: "row",
-    backgroundColor: COLORS.white,
-    marginHorizontal: 14,
-    marginTop: 4,
-    borderRadius: 17,
-    padding: 4,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    elevation: 1,
+  searchInput: { flex: 1, fontSize: 12, fontWeight: '700', color: C.text, paddingHorizontal: 8 },
+
+  statsGrid: { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  statBox: { 
+    flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.85)', borderRadius: 12, paddingVertical: 10, 
+    alignItems: 'center', borderWidth: 1.5, borderColor: C.border, elevation: 1 
   },
-  filterTab: { flex: 1, minHeight: 48, borderRadius: 13, justifyContent: "center", alignItems: "center", flexDirection: "row", gap: 5 },
-  filterTabActive: { backgroundColor: COLORS.primary, elevation: 2 },
-  filterTabText: { fontSize: 12, fontWeight: "800", color: COLORS.textMuted },
-  filterTabTextActive: { color: COLORS.white },
-  filterCount: { minWidth: 19, height: 19, borderRadius: 10, backgroundColor: "#EDF2F7", justifyContent: "center", alignItems: "center", paddingHorizontal: 4 },
-  filterCountActive: { backgroundColor: "rgba(255,255,255,0.22)" },
-  filterCountText: { fontSize: 9, fontWeight: "900", color: COLORS.textMuted },
-  filterCountTextActive: { color: COLORS.white },
-  sectionHeader: { paddingHorizontal: 18, paddingTop: 22, paddingBottom: 11, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  sectionTitle: { fontSize: 18, fontWeight: "900", color: COLORS.textDark },
-  sectionSubtitle: { fontSize: 11, color: COLORS.textMuted, fontWeight: "600", marginTop: 2 },
-  liveBadge: { flexDirection: "row", alignItems: "center", paddingHorizontal: 9, paddingVertical: 6, borderRadius: 10, backgroundColor: COLORS.greenLight },
-  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: COLORS.green, marginRight: 5 },
-  liveText: { fontSize: 9, fontWeight: "900", color: COLORS.green },
-  queryCard: {
-    backgroundColor: COLORS.white,
-    marginHorizontal: 14,
-    marginBottom: 12,
-    padding: 15,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    elevation: 3,
-    shadowColor: "#5F7690",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    overflow: "hidden",
+  statNumber: { fontSize: 15, fontWeight: '900', color: C.dark },
+  statLabel: { fontSize: 9, fontWeight: '800', color: C.gray, textTransform: 'uppercase', marginTop: 2 },
+
+  tabsRow: { 
+    flexDirection: 'row', backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+    borderRadius: 12, padding: 4, borderWidth: 1.5, borderColor: C.border, marginBottom: 14, elevation: 1 
   },
-  queryCardNew: { borderLeftWidth: 4, borderLeftColor: COLORS.primary },
-  queryCardSolved: { borderLeftWidth: 4, borderLeftColor: COLORS.green },
-  queryTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
-  userInfo: { flex: 1 },
-  userName: { fontSize: 15, fontWeight: "900", color: COLORS.textDark },
-  infoLine: { flexDirection: "row", alignItems: "center", marginTop: 5 },
-  timeText: { fontSize: 10, fontWeight: "600", color: COLORS.textMuted, marginLeft: 4 },
-  statusBadge: { flexDirection: "row", alignItems: "center", paddingHorizontal: 9, paddingVertical: 6, borderRadius: 10 },
-  newBadge: { backgroundColor: COLORS.redLight },
-  solvedBadge: { backgroundColor: COLORS.greenLight },
-  statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 5 },
-  statusText: { fontSize: 9, fontWeight: "900" },
-  contactSection: { flexDirection: "row", flexWrap: "wrap", marginTop: 13, marginBottom: 11, gap: 7 },
-  contactItem: { flexDirection: "row", alignItems: "center", backgroundColor: "#F5F8FC", borderRadius: 9, paddingHorizontal: 9, paddingVertical: 7, maxWidth: "100%" },
-  contactText: { fontSize: 10, fontWeight: "700", color: COLORS.primary, marginLeft: 5, maxWidth: 185 },
-  subjectRow: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
-  subjectIcon: { width: 29, height: 29, borderRadius: 9, backgroundColor: COLORS.blueLight, justifyContent: "center", alignItems: "center", marginRight: 8 },
-  subject: { flex: 1, fontSize: 14, fontWeight: "900", color: COLORS.primary },
-  messageBox: { backgroundColor: "#F7F9FC", borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, borderColor: "#EDF1F6", marginBottom: 13 },
-  message: { fontSize: 12, lineHeight: 18, color: "#596B82", fontWeight: "500" },
-  actionRow: { flexDirection: "row", alignItems: "center", paddingTop: 11, borderTopWidth: 1, borderTopColor: "#EEF2F6", gap: 7 },
-  whatsappButton: { flex: 1, minHeight: 40, flexDirection: "row", justifyContent: "center", alignItems: "center", backgroundColor: COLORS.greenLight, borderWidth: 1, borderColor: COLORS.greenBorder, borderRadius: 11 },
-  whatsappText: { fontSize: 10, fontWeight: "900", color: COLORS.green, marginLeft: 5 },
-  solveButton: { flex: 1, minHeight: 40, flexDirection: "row", justifyContent: "center", alignItems: "center", borderRadius: 11, borderWidth: 1 },
-  markButton: { backgroundColor: COLORS.blueLight, borderColor: COLORS.blueBorder },
-  reopenButton: { backgroundColor: COLORS.orangeLight, borderColor: "#FAD99A" },
-  solveText: { fontSize: 10, fontWeight: "900", marginLeft: 5 },
-  deleteButton: { width: 42, height: 40, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.redLight, borderWidth: 1, borderColor: COLORS.redBorder, borderRadius: 11 },
-  loadingContainer: { flex: 1, backgroundColor: COLORS.background, justifyContent: "center", alignItems: "center", padding: 30 },
-  loadingIcon: { width: 65, height: 65, borderRadius: 22, backgroundColor: COLORS.blueLight, justifyContent: "center", alignItems: "center", marginBottom: 15 },
-  loadingTitle: { fontSize: 16, fontWeight: "900", color: COLORS.textDark, marginTop: 12 },
-  loadingSubtitle: { fontSize: 12, color: COLORS.textMuted, marginTop: 4 },
-  emptyContainer: { backgroundColor: COLORS.white, marginHorizontal: 14, marginTop: 5, paddingVertical: 55, paddingHorizontal: 25, borderRadius: 20, alignItems: "center", borderWidth: 1, borderColor: COLORS.border },
-  emptyIcon: { width: 76, height: 76, borderRadius: 25, backgroundColor: "#F1F5F9", justifyContent: "center", alignItems: "center", marginBottom: 15 },
-  emptyTitle: { fontSize: 17, fontWeight: "900", color: COLORS.textDark },
-  emptySubtitle: { textAlign: "center", fontSize: 12, lineHeight: 18, color: COLORS.textMuted, marginTop: 5 },
-  clearSearchButton: { backgroundColor: COLORS.blueLight, paddingHorizontal: 18, paddingVertical: 10, borderRadius: 11, marginTop: 16 },
-  clearSearchText: { fontSize: 11, fontWeight: "900", color: COLORS.primary },
-  footerSpace: { height: 20 },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(5, 25, 48, 0.62)", justifyContent: "center", alignItems: "center", padding: 20 },
-  modalCard: { width: "100%", backgroundColor: COLORS.white, borderRadius: 25, padding: 22, elevation: 15, shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 15 },
-  warningIcon: { width: 58, height: 58, borderRadius: 19, backgroundColor: COLORS.redLight, justifyContent: "center", alignItems: "center", alignSelf: "center", marginBottom: 13 },
-  modalTitle: { textAlign: "center", fontSize: 19, fontWeight: "900", color: COLORS.textDark },
-  modalDescription: { textAlign: "center", fontSize: 12, lineHeight: 18, color: COLORS.textMuted, marginTop: 6, marginBottom: 17 },
-  modalUserBox: { flexDirection: "row", alignItems: "center", backgroundColor: "#F7F9FC", borderRadius: 15, padding: 11, marginBottom: 19, borderWidth: 1, borderColor: COLORS.border },
-  modalUserName: { fontSize: 13, fontWeight: "900", color: COLORS.textDark },
-  modalUserSubject: { fontSize: 10, fontWeight: "600", color: COLORS.textMuted, marginTop: 3 },
-  modalButtons: { flexDirection: "row", gap: 10 },
-  cancelButton: { flex: 1, height: 46, borderRadius: "13", borderRadius: 13, backgroundColor: "#F1F5F9", justifyContent: "center", alignItems: "center" },
-  cancelText: { fontSize: 12, fontWeight: "900", color: "#526276" },
-  confirmDeleteButton: { flex: 1, height: 46, borderRadius: 13, backgroundColor: COLORS.red, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 5 },
-  confirmDeleteText: { fontSize: 12, fontWeight: "900", color: COLORS.white },
+  tabBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', backgroundColor: 'transparent' },
+  tabBtnActive: { backgroundColor: C.dark, elevation: 2 },
+  tabText: { fontSize: 10, fontWeight: '800', color: C.gray },
+  tabTextActive: { color: C.white, fontWeight: '900' },
+
+  queryCard: { 
+    backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: 16, padding: 14, 
+    borderWidth: 1.5, borderColor: C.border, marginBottom: 10, elevation: 2 
+  },
+  cardNew: { borderLeftWidth: 4, borderLeftColor: C.danger },
+  cardSolved: { borderLeftWidth: 4, borderLeftColor: C.success },
+
+  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
+  userName: { fontSize: 14, fontWeight: '900', color: C.dark },
+  timeText: { fontSize: 10, fontWeight: '700', color: C.gray, marginTop: 2 },
+  
+  badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  badgeDanger: { backgroundColor: C.dangerBg },
+  badgeSuccess: { backgroundColor: C.successBg },
+  badgeText: { fontSize: 9, fontWeight: '900' },
+
+  contactRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
+  contactChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, gap: 4 },
+  contactText: { fontSize: 10, fontWeight: '800', color: C.secondary },
+
+  subjectTitle: { fontSize: 13, fontWeight: '900', color: C.text, marginBottom: 4 },
+  messageText: { fontSize: 11, fontWeight: '600', color: C.gray, lineHeight: 16, marginBottom: 12 },
+
+  actionRow: { flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#f1f5f9', paddingTop: 10, gap: 6 },
+  whatsappBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: C.successBg, height: 36, borderRadius: 8, gap: 4, borderWidth: 1, borderColor: '#a7f3d0' },
+  whatsappText: { fontSize: 10, fontWeight: '900', color: C.success },
+  statusBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', height: 36, borderRadius: 8, gap: 4, borderWidth: 1, borderColor: '#cbd5e1' },
+  statusBtnText: { fontSize: 10, fontWeight: '900' },
+  deleteBtn: { width: 36, height: 36, backgroundColor: C.dangerBg, borderRadius: 8, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#fecaca' },
+
+  emptyBox: { padding: 40, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 16, borderWidth: 1.5, borderColor: C.border, marginTop: 10 },
+  emptyTitle: { fontSize: 13, fontWeight: '900', color: C.dark, marginTop: 8 },
+
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(7, 30, 61, 0.7)', justifyContent: 'center', alignItems: 'center', padding: 16 },
+  modalCard: { width: '100%', maxWidth: 300, backgroundColor: C.white, borderRadius: 18, padding: 20, alignItems: 'center', elevation: 10 },
+  modalIconBox: { width: 46, height: 46, borderRadius: 23, backgroundColor: C.dangerBg, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+  modalTitle: { fontSize: 15, fontWeight: '900', color: C.dark, marginBottom: 4 },
+  modalSub: { fontSize: 11, color: C.gray, textAlign: 'center', fontWeight: '600', marginBottom: 20, lineHeight: 16 },
+  modalBtnRow: { flexDirection: 'row', gap: 10, width: '100%' },
+  cancelBtn: { flex: 1, backgroundColor: '#f1f5f9', height: 40, borderRadius: 8, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#cbd5e1' },
+  cancelBtnText: { color: C.dark, fontSize: 11, fontWeight: '900' },
+  confirmBtn: { flex: 1, backgroundColor: C.danger, height: 40, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  confirmBtnText: { color: C.white, fontSize: 11, fontWeight: '900' },
 });

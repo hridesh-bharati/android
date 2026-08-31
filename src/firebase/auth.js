@@ -1,3 +1,4 @@
+// src\firebase\auth.js
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,

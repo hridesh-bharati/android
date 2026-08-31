@@ -13,7 +13,7 @@ import CardSlider from '../components/CardSlider';
 import DirectorMessage from '../components/DirectorMessage';
 import UpgradeSkills from '../components/UpgradeSkills';
 import JoinBatchBanner from '../components/JoinBatchBanner';
-
+import HomeOffers from "../components/HomeOffers/HomeOffers"
 export default function HomeScreen() {
   return (
     <View style={styles.mainContainer}>
@@ -28,9 +28,10 @@ export default function HomeScreen() {
         <UpgradeSkills />
         <StudentTestimonials />
         <QuickInquiryWidget />
-        <JoinBatchBanner />
+        <HomeOffers />
         <CardSlider />
         <DirectorMessage />
+        <JoinBatchBanner />
         <View style={{ height: 100 }} />
       </ScrollView>
     </View>

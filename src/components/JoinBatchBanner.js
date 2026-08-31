@@ -1,11 +1,9 @@
 // src/components/JoinBatchBanner.js
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Dimensions, Image } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { COLORS, FONTS } from '../constants/theme';
 import { navigationRef } from '../services/NavigationService';
-
-const { width } = Dimensions.get('window');
 
 export default function JoinBatchBanner() {
   const handleApplyNow = () => {
@@ -18,23 +16,33 @@ export default function JoinBatchBanner() {
     <View style={styles.wrapper}>
       <View style={styles.bannerCard}>
         <View style={styles.glowBlob} />
-        
+
+        {/* Left Content Container */}
         <View style={styles.contentContainer}>
           <Text style={styles.title}>
-            Join New <Text style={{ color: COLORS.danger }}>Batch</Text> Today!
+            New Batch Starts <Text style={{ color: COLORS.primary || '#0d6efd' }}>Every Month</Text>
           </Text>
           <Text style={styles.subtitle} numberOfLines={2}>
-            Admission open for Tally Prime, ADCA & Professional Web Design.
+            Join Now & Shape Your Future
           </Text>
 
-          <TouchableOpacity 
-            style={styles.applyBtn} 
+          <TouchableOpacity
+            style={styles.applyBtn}
             activeOpacity={0.85}
             onPress={handleApplyNow}
           >
-            <Text style={styles.applyBtnText}>Apply Now</Text>
+            <Text style={styles.applyBtnText}>Enroll Now</Text>
             <MaterialIcons name="arrow-forward" size={16} color={COLORS.white} />
           </TouchableOpacity>
+        </View>
+
+        {/* Right Image Container */}
+        <View style={styles.imageContainer}>
+          <Image
+            source={require('../../assets/education.png')}
+            style={styles.bannerImage}
+            resizeMode="contain"
+          />
         </View>
       </View>
     </View>
@@ -42,78 +50,95 @@ export default function JoinBatchBanner() {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { 
+  wrapper: {
     paddingHorizontal: 16,
-    paddingVertical: 12, 
-    backgroundColor: COLORS.background || '#F4F7FB' 
+    paddingBottom: 20,
+    backgroundColor: COLORS.background || '#F4F7FB',
   },
-  bannerCard: { 
+  bannerCard: {
     position: 'relative',
-    backgroundColor: 'rgba(255, 255, 255, 0.90)', 
-    borderRadius: 24, 
-    padding: 20, 
-    borderWidth: 1.5, 
-    borderColor: '#FFFFFF', 
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 24,
+    paddingTop: 16,
+    paddingLeft: 18,
+    paddingRight: 0,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
     overflow: 'hidden',
-    elevation: 4, 
-    shadowColor: '#0284c7', 
-    shadowOffset: { width: 0, height: 4 }, 
-    shadowOpacity: 0.1, 
+    elevation: 4,
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
     shadowRadius: 10,
-    alignItems: 'center'
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   glowBlob: {
-    position: "absolute",
-    top: -30,
-    right: -30,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: "rgba(2, 132, 199, 0.1)",
+    position: 'absolute',
+    top: -20,
+    right: -20,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(2, 132, 199, 0.08)',
   },
   contentContainer: {
-    width: '100%',
-    alignItems: 'center',
-    zIndex: 1
+    flex: 1,
+    alignItems: 'flex-start',
+    zIndex: 1,
+    paddingRight: 10,
   },
-  title: { 
-    fontSize: 18, 
-    fontWeight: '900', 
+  title: {
+    fontSize: 16,
+    fontWeight: '900',
     fontFamily: FONTS.bold,
-    color: COLORS.darkGray || '#0F172A', 
-    textAlign: 'center',
+    color: '#0f172a',
+    textAlign: 'left',
     marginBottom: 4,
-    letterSpacing: -0.3
+    letterSpacing: -0.3,
+    lineHeight: 22,
   },
-  subtitle: { 
-    fontSize: 11.5, 
+  subtitle: {
+    fontSize: 11.5,
     fontFamily: FONTS.regular,
-    color: COLORS.gray || '#64748B', 
-    textAlign: 'center', 
+    color: COLORS.gray || '#64748B',
+    textAlign: 'left',
     fontWeight: '600',
-    marginBottom: 16,
-    paddingHorizontal: 10
+    marginBottom: 12, // Subtitle aur button ke beech ka gap thoda compact kiya gaya hai
   },
-  applyBtn: { 
+  applyBtn: {
     flexDirection: 'row',
-    alignItem: 'center',
+    alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: COLORS.secondary || '#0284c7', 
-    paddingHorizontal: 28, 
-    paddingVertical: 11, 
-    borderRadius: 30, 
-    elevation: 3, 
-    shadowColor: COLORS.secondary || '#0284c7',
+    backgroundColor: '#fd7e14',
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    borderRadius: 30,
+    elevation: 3,
+    shadowColor: '#fd7e14',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
-    shadowRadius: 6
+    shadowRadius: 6,
+    marginBottom:10,
   },
-  applyBtnText: { 
-    color: COLORS.white, 
-    fontSize: 13, 
-    fontWeight: '800', 
+  applyBtnText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '800',
     fontFamily: FONTS.bold,
-    letterSpacing: 0.3
+    letterSpacing: 0.3,
+  },
+  imageContainer: {
+    width: 150,
+    height: 130,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    zIndex: 1,
+  },
+  bannerImage: {
+    width:200,
+    height: 120,
   },
 });

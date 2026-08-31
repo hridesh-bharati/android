@@ -9,6 +9,11 @@ import { AuthContext } from '../context/AuthContext';
 
 const { width } = Dimensions.get('window');
 
+const shadowStyle = Platform.select({
+  ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 6 },
+  android: { elevation: 3 }
+});
+
 export default function Header() {
   const navigation = useNavigation();
   const [sidebarVisible, setSidebarVisible] = useState(false);
@@ -18,7 +23,6 @@ export default function Header() {
     setSidebarVisible(!sidebarVisible);
   };
 
-  // Safe Navigation Helper for Root Stack & Nested Tabs
   const navigateTo = (screenName, params) => {
     toggleSidebar();
     const parentNav = navigation.getParent();
@@ -72,7 +76,7 @@ export default function Header() {
           />
         </View>
 
-        {/* Right: Bell Icon & Menu Button */}
+        {/* Right: Bell Icon, Chat Icon & Menu Button */}
         <View style={styles.headerRight}>
           <View style={styles.bellContainer}>
             <MaterialIcons name="notifications-none" size={20} color="#ffffff" />
@@ -80,6 +84,23 @@ export default function Header() {
               <Text style={styles.badgeText}>3</Text>
             </View>
           </View>
+
+          {/* 🚀 Chat Icon Added Right After Bell Icon */}
+          <TouchableOpacity 
+            onPress={() => {
+              const parentNav = navigation.getParent();
+              if (parentNav) {
+                parentNav.navigate('ChatScreen');
+              } else {
+                navigation.navigate('ChatScreen');
+              }
+            }} 
+            style={styles.chatTouch} 
+            activeOpacity={0.8}
+          >
+            <MaterialIcons name="chat" size={19} color="#ffffff" />
+          </TouchableOpacity>
+
           <TouchableOpacity onPress={toggleSidebar} style={styles.menuTouch} activeOpacity={0.8}>
             <MaterialIcons name="menu" size={22} color="#ffffff" />
           </TouchableOpacity>
@@ -97,7 +118,6 @@ export default function Header() {
           <TouchableOpacity style={styles.backdropTouch} activeOpacity={1} onPress={toggleSidebar} />
 
           <View style={styles.sidebarContainer}>
-            {/* User Profile Header */}
             <View style={styles.profileHeader}>
               <TouchableOpacity onPress={toggleSidebar} style={styles.closeTouch} activeOpacity={0.7}>
                 <MaterialIcons name="close" size={20} color="#64748b" />
@@ -111,7 +131,6 @@ export default function Header() {
               </View>
             </View>
 
-            {/* Navigation List */}
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sidebarScroll}>
               <Text style={styles.sectionHeaderLabel}>Main Navigation</Text>
               <SidebarItem icon="home" label="Home" onPress={() => navigateTo('MainTabs', { screen: 'Home' })} />
@@ -119,11 +138,12 @@ export default function Header() {
               <SidebarItem icon="file-document-edit" label="Admission" iconType="community" onPress={() => navigateTo('MainTabs', { screen: 'Admission' })} />
 
               <Text style={styles.sectionHeaderLabel}>Student Zone & Updates</Text>
+              <SidebarItem icon="chat" label="Live Chat" onPress={() => navigateTo('ChatScreen')} />
               <SidebarItem icon="notifications-none" label="Notices" />
               <SidebarItem icon="event" label="Events" />
               <SidebarItem icon="bar-chart" label="Results" />
               <SidebarItem icon="book-open-page-variant" label="Study Material" iconType="community" />
-              <SidebarItem icon="perm-media" label="Gallery" />
+              <SidebarItem icon="perm-media" label="Gallery" onPress={() => navigateTo('Gallery')} />
 
               <Text style={styles.sectionHeaderLabel}>Verification Center</Text>
               <SidebarItem icon="verified" label="Certificate Verification" onPress={() => navigateTo('Verification')} />
@@ -175,6 +195,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 10,
     paddingVertical: 10,
+    ...shadowStyle,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -232,11 +253,14 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
   bellContainer: {
     position: 'relative',
-    marginRight: 10,
     padding: 2,
+  },
+  chatTouch: {
+    padding: 4,
   },
   badge: {
     position: 'absolute',

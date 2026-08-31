@@ -14,15 +14,15 @@ export default function AdminSidebar({ activeTab, setActiveTab, sidebarOpen, set
         { id: 'admitted', label: 'Admitted Students', icon: 'account-group-outline' },
         { id: 'new_adm', label: 'New Admissions', icon: 'account-plus-outline' },
         { id: 'queries', label: 'Inbox (Queries)', icon: 'message-processing-outline' },
-        { id: 'exams', label: 'Examinations', icon: 'file-document-edit-outline', badge: '10' },
+        { id: 'exams', label: 'Examinations', icon: 'file-document-edit-outline' },  
         { id: 'attendance', label: 'Attendance', icon: 'calendar-check-outline' },
-        { id: 'tests', label: 'Practice Tests', icon: 'format-list-checks' },
+        { id: 'tests', label: 'Practice Tests', icon: 'format-list-checks' }, 
       ]
     },
     {
-      title: 'MARKETING',
+      title: 'MARKETING & CONTENT',
       items: [
-        { id: 'upload_media', label: 'Upload Media', icon: 'cloud-upload-outline' },
+        { id: 'notes_upload', label: 'Upload Notes', icon: 'file-pdf-box' }, // Replaced upload_media with notes upload
         { id: 'gallery', label: 'Gallery', icon: 'image-album' },
         { id: 'create_offers', label: 'Create Offers', icon: 'tag-plus-outline' },
         { id: 'delete_offers', label: 'Delete Offers', icon: 'tag-remove-outline' },
@@ -32,7 +32,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, sidebarOpen, set
       title: 'SYSTEM',
       items: [
         { id: 'admin_list', label: 'Admin List', icon: 'shield-account-outline' },
-        { id: 'visitor_list', label: 'Visitor List', icon: 'eye-outline' },
+        // { id: 'visitor_list', label: 'Visitor List', icon: 'eye-outline' },
         { id: 'admin_profile', label: 'Admin Account', icon: 'account-cog-outline' },
       ]
     }
@@ -94,106 +94,22 @@ export default function AdminSidebar({ activeTab, setActiveTab, sidebarOpen, set
 }
 
 const styles = StyleSheet.create({
-  sidebar: {
-    width: 270,
-    backgroundColor: '#ffffff',
-    borderRightWidth: 1,
-    borderRightColor: '#e2e8f0',
-    paddingVertical: 12,
-  },
-  floatingSidebar: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    zIndex: 100,
-    elevation: 25,
-  },
-  sidebarHeader: {
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-    marginBottom: 8,
-  },
-  logoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  brandIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: '#071e3d',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sidebarBrand: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#071e3d',
-  },
-  sidebarBrandSub: {
-    fontSize: 8,
-    fontWeight: '700',
-    color: '#64748b',
-  },
-  sidebarScroll: {
-    paddingHorizontal: 12,
-    paddingBottom: 30,
-  },
-  menuSection: {
-    marginBottom: 16,
-  },
-  sectionHeaderTitle: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#94a3b8',
-    marginHorizontal: 10,
-    marginBottom: 6,
-    marginTop: 8,
-  },
-  drawerItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 11,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    gap: 12,
-    marginVertical: 2,
-  },
-  activeDrawerItem: {
-    backgroundColor: '#f0f9ff',
-  },
-  drawerItemText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#475569',
-    flex: 1,
-  },
-  activeDrawerText: {
-    color: '#0284c7',
-    fontWeight: '700',
-  },
-  badgeContainer: {
-    backgroundColor: '#ef4444',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  badgeText: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  sidebarFooter: {
-    marginTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-    paddingTop: 14,
-  },
-  logoutWrapper: {
-    alignItems: 'stretch',
-  },
+  sidebar: { width: 270, backgroundColor: '#ffffff', borderRightWidth: 1, borderRightColor: '#e2e8f0', paddingVertical: 12 },
+  floatingSidebar: { position: 'absolute', top: 0, bottom: 0, left: 0, zIndex: 100, elevation: 25 },
+  sidebarHeader: { paddingHorizontal: 16, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: '#f1f5f9', marginBottom: 8 },
+  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  brandIconBox: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#071e3d', justifyContent: 'center', alignItems: 'center' },
+  sidebarBrand: { fontSize: 13, fontWeight: '900', color: '#071e3d' },
+  sidebarBrandSub: { fontSize: 8, fontWeight: '700', color: '#64748b' },
+  sidebarScroll: { paddingHorizontal: 12, paddingBottom: 30 },
+  menuSection: { marginBottom: 16 },
+  sectionHeaderTitle: { fontSize: 10, fontWeight: '700', color: '#94a3b8', marginHorizontal: 10, marginBottom: 6, marginTop: 8 },
+  drawerItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 11, paddingHorizontal: 12, borderRadius: 10, gap: 12, marginVertical: 2 },
+  activeDrawerItem: { backgroundColor: '#f0f9ff' },
+  drawerItemText: { fontSize: 13, fontWeight: '600', color: '#475569', flex: 1 },
+  activeDrawerText: { color: '#0284c7', fontWeight: '700' },
+  badgeContainer: { backgroundColor: '#ef4444', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  badgeText: { color: '#ffffff', fontSize: 10, fontWeight: '700' },
+  sidebarFooter: { marginTop: 16, borderTopWidth: 1, borderTopColor: '#f1f5f9', paddingTop: 14 },
+  logoutWrapper: { alignItems: 'stretch' },
 });

@@ -9,7 +9,7 @@ export default function PopularCourses() {
 
   const courses = [
     { title: 'CCC', desc: 'Course', time: '3 Months', icon: 'desktop-windows', accent: '#ef4444', bgTint: '#fef2f2' },
-    { title: 'ADCA', desc: 'Course', time: '18 Months', icon: 'badge', accent: '#8b5cf6', bgTint: '#f5f3ff' },
+    { title: 'ADCA+', desc: 'Course', time: '18 Months', icon: 'badge', accent: '#8b5cf6', bgTint: '#f5f3ff' },
     { title: 'DCA', desc: 'Course', time: '12 Months', icon: 'computer', accent: '#0284c7', bgTint: '#f0f9ff' },
     { title: 'Tally Prime', desc: 'Course', time: '3 Months', icon: 'calculate', accent: '#10b981', bgTint: '#ecfdf5' },
   ];

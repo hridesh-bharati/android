@@ -446,7 +446,7 @@ export default function StudentCertificate({ route, navigation, student: propStu
                     ) : (
                         <>
                             <MaterialIcons name="download" size={16} color="#ffffff" style={{ marginRight: 6 }} />
-                            <Text style={styles.downloadBtnText}>Download PDF Certificate</Text>
+                            <Text style={styles.downloadBtnText}>Download/Print PDF</Text>
                         </>
                     )}
                 </TouchableOpacity>

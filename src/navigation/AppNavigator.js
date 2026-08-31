@@ -29,15 +29,27 @@ import StudentDashboard from '../dashboard/student/StudentDashboard';
 // Fee Management Screen
 import FeePage from '../dashboard/admin/studentManagement/fees/FeePage';
 
-// Student Profile & Provider
+// Student Profile & Provider & Privacy Security
 import StudentProfile from '../dashboard/admin/studentManagement/StudentProfile';
 import AdmissionProvider from '../dashboard/admin/studentManagement/AdmissionProvider';
+import PrivecySecurity from "../dashboard/student/PrivecySecurity";
+
+// Exam & Practice Navigators (Student Side)
+import ExamNavigator from '../dashboard/student/exams/ExamNavigator';
+import PracticeNavigator from '../dashboard/student/practice/PracticeNavigator';
+
+// Notes Download Component (Student Notes View)
+import NotesDownload from '../components/notes/NotesDownload';
 
 // Queries / Contact Us Form Component
 import QueriesForm from '../components/QueriesForm';
 import TeamScreen from '../screens/TeamScreen';
+import Verification from '../screens/VerificationScreen';
+import GalleryScreen from '../components/gallery/GalleryScreen';
+import ChatScreen from '../components/ChatScreen'; // 👈 Imported Chat Screen
 
-import Verification from '../screens/VerificationScreen'; 
+import AdminExamNavigator from '../dashboard/admin/examManagement/ExamNavigator';
+import CertificateNavigator from '../dashboard/student/Certificate/CertificateNavigator';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -49,43 +61,51 @@ function MainTabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarInactiveTintColor: '#94a3b8',
+        tabBarInactiveTintColor: '#64748b',
         tabBarStyle: {
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          height: 75,
+          backgroundColor: '#ffffff',
+          height: 82,
           borderTopWidth: 0,
-          paddingBottom: 12,
-          paddingTop: 4,
-          paddingHorizontal: 4,
-          elevation: 10,
+          paddingBottom: 10,
+          paddingTop: 8,
+          paddingHorizontal: 8,
+          elevation: 15,
           position: 'absolute',
           left: 0,
           right: 0,
           bottom: 0,
           borderTopLeftRadius: 28,
           borderTopRightRadius: 28,
-          borderBottomLeftRadius: 0,
-          borderBottomRightRadius: 0,
-          shadowColor: '#64748b',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.15,
-          shadowRadius: 8,
+          shadowColor: '#0f172a',
+          shadowOffset: { width: 0, height: -6 },
+          shadowOpacity: 0.1,
+          shadowRadius: 10,
         },
         tabBarItemStyle: {
-          margin: 4,
+          marginVertical: 2,
+          marginHorizontal: 2,
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          marginTop: 2,
+          fontWeight: '600',
+          marginTop: 4,
         },
         tabBarIcon: ({ color, focused }) => {
-          let iconColor = focused ? color : '#94a3b8';
+          let iconColor = focused ? color : '#64748b';
 
           if (route.name === 'Home') {
-            return <MaterialIcons name="home" size={24} color={focused ? '#ef4444' : iconColor} />;
+            return (
+              <View style={[styles.iconContainer, focused && styles.homeActiveBg]}>
+                <MaterialIcons name="home" size={22} color={focused ? '#ef4444' : iconColor} />
+              </View>
+            );
           }
           if (route.name === 'Courses') {
-            return <MaterialIcons name="menu-book" size={24} color={focused ? '#8b5cf6' : iconColor} />;
+            return (
+              <View style={[styles.iconContainer, focused && styles.coursesActiveBg]}>
+                <MaterialIcons name="menu-book" size={22} color={focused ? '#8b5cf6' : iconColor} />
+              </View>
+            );
           }
           if (route.name === 'Admission') {
             return (
@@ -97,10 +117,18 @@ function MainTabNavigator() {
             );
           }
           if (route.name === 'Notes') {
-            return <MaterialIcons name="note-alt" size={24} color={focused ? '#10b981' : iconColor} />;
+            return (
+              <View style={[styles.iconContainer, focused && styles.notesActiveBg]}>
+                <MaterialIcons name="note-alt" size={22} color={focused ? '#10b981' : iconColor} />
+              </View>
+            );
           }
           if (route.name === 'DashboardTab') {
-            return <MaterialIcons name="dashboard" size={24} color={focused ? '#f59e0b' : iconColor} />;
+            return (
+              <View style={[styles.iconContainer, focused && styles.dashboardActiveBg]}>
+                <MaterialIcons name="dashboard" size={22} color={focused ? '#f59e0b' : iconColor} />
+              </View>
+            );
           }
         },
       })}
@@ -108,14 +136,14 @@ function MainTabNavigator() {
       <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarActiveTintColor: '#ef4444' }} />
       <Tab.Screen name="Courses" component={CoursesScreen} options={{ tabBarActiveTintColor: '#8b5cf6' }} />
       <Tab.Screen name="Admission" component={AdmissionScreen} options={{ tabBarLabel: 'Admission' }} />
-      <Tab.Screen name="Notes" component={NotesScreen} options={{ tabBarActiveTintColor: '#10b981' }} />
-      <Tab.Screen 
-        name="DashboardTab" 
-        component={ProfileScreen} 
-        options={{ tabBarLabel: 'Dashboard', tabBarActiveTintColor: '#f59e0b' }} 
+      <Tab.Screen name="Notes" component={NotesDownload} options={{ tabBarActiveTintColor: '#10b981', tabBarLabel: 'Notes' }} />
+      <Tab.Screen
+        name="DashboardTab"
+        component={ProfileScreen}
+        options={{ tabBarLabel: 'Dashboard', tabBarActiveTintColor: '#f59e0b' }}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
-            e.preventDefault(); 
+            e.preventDefault();
             if (!user) {
               navigation.navigate('Login');
             } else if (role === 'admin' || user.email?.toLowerCase() === 'hridesh027@gmail.com') {
@@ -155,8 +183,16 @@ export default function AppNavigator() {
         <Stack.Screen name="FeePage" component={FeePage} />
         <Stack.Screen name="TeamScreen" component={TeamScreen} />
         <Stack.Screen name="Verification" component={Verification} />
+        <Stack.Screen name="Gallery" component={GalleryScreen} /> 
+        <Stack.Screen name="ChatScreen" component={ChatScreen} /> 
+        <Stack.Screen name="PrivecySecurity" component={PrivecySecurity} />
+
+        {/* Exam Modules */}
+        <Stack.Screen name="ExamModule" component={AdminExamNavigator} />
+        <Stack.Screen name="ExamNavigator" component={ExamNavigator} />
+        <Stack.Screen name="PracticeNavigator" component={PracticeNavigator} />
+        <Stack.Screen name="CertificateNavigator" component={CertificateNavigator} />
         <Stack.Screen name="StudentProfile">
-          
           {props => (
             <AdmissionProvider>
               <StudentProfile {...props} />
@@ -189,6 +225,25 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
+  },
+  iconContainer: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  homeActiveBg: {
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+  },
+  coursesActiveBg: {
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+  },
+  notesActiveBg: {
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+  },
+  dashboardActiveBg: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
   },
   centerButtonWrapper: {
     position: 'absolute',
