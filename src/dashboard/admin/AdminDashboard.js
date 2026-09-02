@@ -16,11 +16,8 @@ import NotesUpload from './notes/NotesUpload';
 import GalleryScreen from '../../components/gallery/GalleryScreen'; 
 import CreateOffer from './offers/CreateOffer';
 import DeleteOffer from './offers/DeleteOffer';
-
-// 🚀 Imported AdminList System Component
+import QuickInquiryWidget from './enquery/QuickInquiryWidget';
 import AdminList from './system/AdminList';
-
-import Logout from '../../auth/Logout';
 
 const { width } = Dimensions.get('window');
 const isDesktopWeb = width > 768;
@@ -54,19 +51,13 @@ export default function AdminDashboard() {
 
     switch (activeTab) {
       case 'admitted':
-        return (
-          <AdmissionProvider>
-            <StudentManagement viewMode="admitted" />
-          </AdmissionProvider>
-        );
+        return <AdmissionProvider><StudentManagement viewMode="admitted" /></AdmissionProvider>;
       case 'new_adm':
-        return (
-          <AdmissionProvider>
-            <StudentManagement viewMode="new_adm" />
-          </AdmissionProvider>
-        );
+        return <AdmissionProvider><StudentManagement viewMode="new_adm" /></AdmissionProvider>;
       case 'queries': 
         return <AdaptiveAdminQueries />;
+      case 'enquiries': 
+        return <QuickInquiryWidget />;
       case 'exams': 
         return <ExamNavigator />;
       case 'tests':
@@ -85,11 +76,7 @@ export default function AdminDashboard() {
       case 'admin_profile':
         return <AdminProfileContent />;
       default:
-        return (
-          <AdmissionProvider>
-            <AdminDashboardContent activeTab={activeTab} onNavigate={handleNavigate} />
-          </AdmissionProvider>
-        );
+        return <AdmissionProvider><AdminDashboardContent activeTab={activeTab} onNavigate={handleNavigate} /></AdmissionProvider>;
     }
   };
 
@@ -97,6 +84,7 @@ export default function AdminDashboard() {
     switch(activeTab) {
       case 'StudentProfile': return "Student Profile";
       case 'queries': return "Query Inbox";
+      case 'enquiries': return "Enquiries";
       case 'exams': return "Examinations";
       case 'tests': return "Practice Tests";
       case 'notes_upload': return "Upload Notes & PDFs";
@@ -104,7 +92,7 @@ export default function AdminDashboard() {
       case 'create_offers': return "Create Live Offer";
       case 'delete_offers': return "Manage Live Offers";
       case 'admin_list': return "System Admins";
-      case 'admitted': return "Admitted Students";
+      case 'admitted': return "Admitted Std ";
       case 'new_adm': return "New Admissions";
       default: return "Admin Console";
     }
@@ -128,20 +116,30 @@ export default function AdminDashboard() {
             style={styles.menuToggleBtn} 
             activeOpacity={0.7}
           >
+            {/* Minimalist Lucide/Align-left style toggle icon without border */}
             <MaterialIcons 
-              name={activeTab === 'StudentProfile' ? "arrow-back" : (sidebarOpen && !isDesktopWeb ? "close" : "menu")} 
+              name={activeTab === 'StudentProfile' ? "arrow-back" : (sidebarOpen && !isDesktopWeb ? "close" : "menu-open")} 
               size={22} 
               color="#0F172A" 
             />
           </TouchableOpacity>
           <View style={styles.titleRow}>
             <View style={styles.headerIconWrapper}>
-              <MaterialCommunityIcons name="shield-account" size={18} color="#0EA5E9" />
+              <MaterialCommunityIcons name="shield-account" size={20} color="#0EA5E9" />
             </View>
             <Text style={styles.headerTitle}>{getHeaderTitle()}</Text>
           </View>
         </View>
-        <Logout />
+
+        <View style={styles.headerRightActions}>
+          <TouchableOpacity 
+            style={styles.topEnquiryBtn} 
+            onPress={() => setActiveTab('enquiries')}
+            activeOpacity={0.7}
+          >
+            <MaterialIcons name="headset-mic" size={20} color="#0284c7" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.mainLayout}>
@@ -169,10 +167,11 @@ const styles = StyleSheet.create({
   bgGlowOrbBottomRight: { position: 'absolute', bottom: -80, right: -60, width: 340, height: 340, borderRadius: 170, backgroundColor: '#34D399', opacity: 0.2 },
   headerBar: { height: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255, 255, 255, 0.85)', paddingHorizontal: 16, borderBottomWidth: 2, borderBottomColor: '#FFFFFF', elevation: 8, shadowColor: '#0EA5E9', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, zIndex: 10 },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  menuToggleBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, borderColor: '#E2E8F0' },
+  menuToggleBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  headerIconWrapper: { width: 34, height: 34, borderRadius: 10, backgroundColor: '#E0F2FE', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#BAE6FD' },
   headerTitle: { fontSize: 16, fontWeight: '900', color: '#0F172A', letterSpacing: 0.3 },
+  headerRightActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  topEnquiryBtn: { width: 38, height: 38, justifyContent: 'center', alignItems: 'center' },
   mainLayout: { flex: 1, flexDirection: 'row', backgroundColor: 'transparent' },
   contentArea: { flex: 1, backgroundColor: 'transparent' },
 });

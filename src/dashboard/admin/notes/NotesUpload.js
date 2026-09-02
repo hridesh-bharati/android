@@ -9,7 +9,8 @@ import {
     ScrollView,
     ActivityIndicator,
     Alert,
-    Platform
+    Platform,
+    Linking
 } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { db } from "../../../services/firebase";
@@ -24,22 +25,6 @@ import {
     serverTimestamp
 } from "firebase/firestore";
 
-const C = {
-    primary: '#0284c7',
-    dark: '#0f172a',
-    danger: '#ef4444',
-    white: '#ffffff',
-    border: '#e2e8f0',
-    gray: '#64748b',
-    bg: '#f8fafc',
-    success: '#10b981'
-};
-
-const shadowStyle = Platform.select({
-    ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 6 },
-    android: { elevation: 3 }
-});
-
 export default function NotesUpload() {
     const [file, setFile] = useState(null);
     const [title, setTitle] = useState("");
@@ -48,25 +33,17 @@ export default function NotesUpload() {
 
     useEffect(() => {
         const q = query(collection(db, "notes"), orderBy("createdAt", "desc"));
-
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            const notesData = snapshot.docs.map((docSnap) => ({
-                id: docSnap.id,
-                ...docSnap.data(),
-            }));
-            setNotesList(notesData);
+            setNotesList(snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() })));
         }, (error) => {
             console.error("Error fetching notes:", error);
         });
-
         return () => unsubscribe();
     }, []);
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
-        if (selectedFile) {
-            setFile(selectedFile);
-        }
+        if (selectedFile) setFile(selectedFile);
     };
 
     const handleUpload = async () => {
@@ -76,7 +53,6 @@ export default function NotesUpload() {
         }
 
         setUploading(true);
-
         try {
             const formData = new FormData();
             formData.append("file", file);
@@ -139,11 +115,7 @@ export default function NotesUpload() {
         try {
             const date = timestamp.toDate();
             return date.toLocaleDateString("en-IN", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
+                day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
             });
         } catch {
             return "Just now";
@@ -154,7 +126,7 @@ export default function NotesUpload() {
         <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
             {/* Upload Form Card */}
             <View style={styles.card}>
-                <Text style={styles.cardTitle}>📤 Upload New PDF</Text>
+                <Text style={styles.cardTitle}>Upload New PDF</Text>
                 
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>Title *</Text>
@@ -176,11 +148,23 @@ export default function NotesUpload() {
                                 type="file"
                                 accept="application/pdf"
                                 onChange={handleFileChange}
-                                style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc' }}
+                                className="custom-file-input"
                             />
+                            <style type="text/css">{`
+                                .custom-file-input::-webkit-file-upload-button {
+                                    background: #0284c7;
+                                    color: white;
+                                    padding: 8px 14px;
+                                    border: none;
+                                    border-radius: 8px;
+                                    font-weight: 700;
+                                    cursor: pointer;
+                                    margin-right: 10px;
+                                }
+                            `}</style>
                         </View>
                     ) : (
-                        <Text style={styles.errorText}>Please use Web platform for direct file inputs or install expo-document-picker.</Text>
+                        <Text style={styles.errorText}>Please use Web platform for direct file inputs.</Text>
                     )}
                     {file && (
                         <Text style={styles.successText}>
@@ -196,7 +180,7 @@ export default function NotesUpload() {
                     activeOpacity={0.8}
                 >
                     {uploading ? (
-                        <ActivityIndicator color={C.white} />
+                        <ActivityIndicator color="#ffffff" />
                     ) : (
                         <Text style={styles.primaryBtnText}>Upload PDF</Text>
                     )}
@@ -205,7 +189,7 @@ export default function NotesUpload() {
 
             {/* Uploaded Files List Card */}
             <View style={styles.card}>
-                <Text style={styles.sectionTitle}>📄 Uploaded Notes & PDFs</Text>
+                <Text style={styles.sectionTitle}>Uploaded Notes & PDFs</Text>
 
                 {notesList.length === 0 ? (
                     <Text style={styles.emptyText}>Koi bhi file uploaded nahi hai.</Text>
@@ -218,17 +202,27 @@ export default function NotesUpload() {
                                         {note.title}
                                     </Text>
                                     <Text style={styles.itemDate}>
-                                        📅 {formatTimestamp(note.createdAt)}
+                                        {formatTimestamp(note.createdAt)}
                                     </Text>
                                 </View>
 
-                                <TouchableOpacity
-                                    style={styles.deleteBtn}
-                                    onPress={() => handleDelete(note.id)}
-                                    activeOpacity={0.7}
-                                >
-                                    <MaterialIcons name="delete-outline" size={18} color={C.danger} />
-                                </TouchableOpacity>
+                                <View style={styles.actionBtns}>
+                                    <TouchableOpacity
+                                        style={styles.viewBtn}
+                                        onPress={() => Linking.openURL(note.pdfUrl)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <MaterialIcons name="visibility" size={18} color="#0284c7" />
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={styles.deleteBtn}
+                                        onPress={() => handleDelete(note.id)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <MaterialIcons name="delete-outline" size={18} color="#ef4444" />
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         ))}
                     </View>
@@ -241,126 +235,154 @@ export default function NotesUpload() {
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
-        backgroundColor: C.bg,
-        padding: 16,
+        backgroundColor: '#f0f6ff',
+        padding: 14,
         paddingBottom: 40
     },
     card: {
-        backgroundColor: C.white,
+        backgroundColor: '#ffffff',
         borderRadius: 16,
-        padding: 18,
-        borderWidth: 1,
-        borderColor: C.border,
-        marginBottom: 16,
-        ...shadowStyle
+        padding: 16,
+        borderWidth: 1.5,
+        borderColor: '#ffffff',
+        marginBottom: 14,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        elevation: 3,
     },
     cardTitle: {
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: '900',
-        color: C.dark,
-        textAlign: 'center',
-        marginBottom: 16,
+        color: '#071e3d',
+        marginBottom: 14,
         textTransform: 'uppercase',
-        letterSpacing: 0.5
     },
     sectionTitle: {
         fontSize: 14,
         fontWeight: '900',
-        color: C.dark,
-        marginBottom: 14,
+        color: '#071e3d',
+        marginBottom: 12,
         textTransform: 'uppercase',
-        letterSpacing: 0.5
     },
     inputGroup: {
-        marginBottom: 14
+        marginBottom: 12
     },
     label: {
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: '800',
-        color: '#475569',
-        marginBottom: 6
+        color: '#64748b',
+        marginBottom: 6,
+        textTransform: 'uppercase'
     },
     input: {
-        backgroundColor: C.bg,
+        backgroundColor: '#f8fafc',
         borderWidth: 1,
-        borderColor: C.border,
-        borderRadius: 10,
-        paddingHorizontal: 14,
-        height: 48,
-        fontSize: 13,
+        borderColor: '#cbd5e1',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        height: 44,
+        fontSize: 12,
         fontWeight: '700',
-        color: C.dark
+        color: '#0f172a'
     },
     webFileWrapper: {
-        width: '100%'
+        width: '100%',
+        backgroundColor: '#f8fafc',
+        borderWidth: 1,
+        borderColor: '#cbd5e1',
+        borderRadius: 12,
+        padding: 8,
+        justifyContent: 'center'
     },
     successText: {
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: '700',
-        color: C.success,
+        color: '#059669',
         marginTop: 6
     },
     errorText: {
-        fontSize: 11,
-        color: C.danger,
+        fontSize: 10,
+        color: '#ef4444',
         fontWeight: '700'
     },
     primaryBtn: {
-        backgroundColor: C.primary,
-        height: 48,
-        borderRadius: 10,
+        backgroundColor: '#0284c7',
+        height: 44,
+        borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 6,
-        ...shadowStyle
+        marginTop: 4,
+        shadowColor: '#0284c7',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 3,
     },
     disabledBtn: {
-        backgroundColor: C.gray
+        backgroundColor: '#64748b'
     },
     primaryBtnText: {
-        color: C.white,
-        fontSize: 13,
+        color: '#ffffff',
+        fontSize: 12,
         fontWeight: '900',
-        letterSpacing: 0.5
+        textTransform: 'uppercase',
     },
     listContainer: {
-        gap: 10
+        gap: 8
     },
     listItem: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingVertical: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f1f5f9'
+        paddingHorizontal: 10,
+        backgroundColor: '#f8fafc',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        marginBottom: 4
     },
     itemInfo: {
         flex: 1,
         marginRight: 10
     },
     itemTitle: {
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: '900',
-        color: C.dark,
+        color: '#0f172a',
         marginBottom: 2
     },
     itemDate: {
-        fontSize: 10,
+        fontSize: 9,
         fontWeight: '700',
-        color: C.gray
+        color: '#64748b'
+    },
+    actionBtns: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6
+    },
+    viewBtn: {
+        backgroundColor: '#e0f2fe',
+        padding: 6,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#bae6fd'
     },
     deleteBtn: {
         backgroundColor: '#fef2f2',
-        padding: 8,
+        padding: 6,
         borderRadius: 8,
         borderWidth: 1,
         borderColor: '#fee2e2'
     },
     emptyText: {
         textAlign: 'center',
-        color: C.gray,
-        fontSize: 12,
+        color: '#64748b',
+        fontSize: 11,
         fontWeight: '700',
-        marginVertical: 20
+        marginVertical: 16
     }
 });

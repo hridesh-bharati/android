@@ -1,3 +1,4 @@
+// src/components/QuickInquiryModal.js
 import React, { useState } from 'react';
 import {
   StyleSheet,
@@ -8,31 +9,56 @@ import {
   Modal,
   Pressable,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { COLORS } from '../constants/theme';
+import { db } from '../services/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-export default function QuickInquiryWidget() {
+export default function QuickInquiryModal() {
   const [modalVisible, setModalVisible] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [course, setCourse] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
-    if (!name || !phone) {
+  const handleSubmit = async () => {
+    if (!name.trim() || !phone.trim()) {
       Alert.alert('Error', 'Please enter your name and phone number.');
       return;
     }
-    Alert.alert('Success!', 'Thank you! Our counselor will call you back shortly.');
-    setName('');
-    setPhone('');
-    setCourse('');
-    setModalVisible(false);
+
+    if (phone.trim().length < 10) {
+      Alert.alert('Error', 'Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await addDoc(collection(db, 'inquiries'), {
+        name: name.trim(),
+        phone: phone.trim(),
+        message: message.trim() || 'No specific query provided',
+        status: 'pending',
+        createdAt: serverTimestamp(),
+      });
+
+      Alert.alert('Success!', 'Thank you! Our counselor will call you back shortly.');
+      setName('');
+      setPhone('');
+      setMessage('');
+      setModalVisible(false);
+    } catch (error) {
+      console.error('Error submitting inquiry:', error);
+      Alert.alert('Error', 'Failed to submit inquiry. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
-      {/* Floating Action Button - Made smaller & positioned higher above bottom bar */}
       <TouchableOpacity 
         style={styles.floatingBtn} 
         activeOpacity={0.85}
@@ -42,12 +68,12 @@ export default function QuickInquiryWidget() {
         <Text style={styles.floatingText}>Enquiry</Text>
       </TouchableOpacity>
 
-      {/* Inquiry Bottom Sheet / Modal */}
       <Modal
         animationType="fade"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
+        statusBarTranslucent
       >
         <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
           <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
@@ -87,19 +113,32 @@ export default function QuickInquiryWidget() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Interested Course (Optional)</Text>
+                <Text style={styles.inputLabel}>Your Message / Query (Optional)</Text>
                 <TextInput
-                  style={styles.textInput}
-                  placeholder="e.g. ADCA, CCC, Tally"
+                  style={[styles.textInput, styles.textArea]}
+                  placeholder="Ask about courses, fees, batches..."
                   placeholderTextColor="#94a3b8"
-                  value={course}
-                  onChangeText={setCourse}
+                  multiline={true}
+                  numberOfLines={3}
+                  value={message}
+                  onChangeText={setMessage}
                 />
               </View>
 
-              <TouchableOpacity style={styles.submitBtn} activeOpacity={0.8} onPress={handleSubmit}>
-                <Text style={styles.submitBtnText}>Request Callback</Text>
-                <MaterialIcons name="arrow-forward" size={16} color="#ffffff" />
+              <TouchableOpacity 
+                style={[styles.submitBtn, loading && { opacity: 0.7 }]} 
+                activeOpacity={0.8} 
+                onPress={handleSubmit}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#ffffff" size="small" />
+                ) : (
+                  <>
+                    <Text style={styles.submitBtnText}>Request Callback</Text>
+                    <MaterialIcons name="arrow-forward" size={16} color="#ffffff" />
+                  </>
+                )}
               </TouchableOpacity>
             </View>
           </Pressable>
@@ -113,7 +152,7 @@ const styles = StyleSheet.create({
   floatingBtn: {
     position: 'absolute',
     right: 16,
-    bottom: 80,
+    bottom: 85,
     backgroundColor: '#0284c7',
     flexDirection: 'row',
     alignItems: 'center',
@@ -142,6 +181,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '100%',
+    maxWidth: 380,
     backgroundColor: '#ffffff',
     borderRadius: 24,
     padding: 20,
@@ -199,8 +239,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#0f172a',
   },
+  textArea: {
+    height: 75,
+    textAlignVertical: 'top',
+  },
   submitBtn: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.secondary || '#0284c7',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
