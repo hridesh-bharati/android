@@ -16,6 +16,7 @@ import {
   Switch,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import * as ImagePicker from 'expo-image-picker';
 import { COLORS } from '../constants/theme';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
@@ -135,24 +136,30 @@ export default function AdmissionScreen() {
   };
 
   // Cloudinary Upload with Progress Tracking
-  const uploadToCloudinaryWithProgress = (fileObj, localUri) => {
-    if (localUri) {
-      setPhotoUri(localUri);
+  const uploadToCloudinaryWithProgress = (filePayload, previewUri) => {
+    if (previewUri) {
+      setPhotoUri(previewUri);
     }
     
     setImgLoading(true);
     setUploadProgress(0);
 
     const data = new FormData();
+
     if (Platform.OS === 'web') {
-      data.append('file', fileObj);
+      data.append('file', filePayload);
     } else {
+      const filename = previewUri.split('/').pop() || 'student_photo.jpg';
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
+
       data.append('file', {
-        uri: fileObj,
-        type: 'image/jpeg',
-        name: 'student_photo.jpg',
+        uri: previewUri,
+        name: filename,
+        type: type,
       });
     }
+
     data.append('upload_preset', 'hridesh99!');
 
     const xhr = new XMLHttpRequest();
@@ -189,6 +196,7 @@ export default function AdmissionScreen() {
     xhr.send(data);
   };
 
+  // Web File Upload Handler
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -201,12 +209,35 @@ export default function AdmissionScreen() {
     }
   };
 
-  const openPicker = () => {
+  // Unified Picker: Web triggers input file, Native triggers Device Gallery
+  const openPicker = async () => {
     if (Platform.OS === 'web') {
       document.getElementById('photo-upload')?.click();
     } else {
-      const dummyUri = 'https://via.placeholder.com/200';
-      uploadToCloudinaryWithProgress(dummyUri, dummyUri);
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permissionResult.granted) {
+        Alert.alert('Permission Denied', 'Gallery access permission is required to upload photo.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.6,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const selectedAsset = result.assets[0];
+
+        if (selectedAsset.fileSize && selectedAsset.fileSize > 50 * 1024) {
+          Alert.alert('Error', 'File size must be less than 50KB. Please select a smaller or compressed image.');
+          return;
+        }
+
+        uploadToCloudinaryWithProgress(null, selectedAsset.uri);
+      }
     }
   };
 
@@ -348,7 +379,7 @@ export default function AdmissionScreen() {
       <View style={styles.bgGlowOrbBottomRight} />
       <View style={styles.bgGlowOrbCenter} />
 
-      {/* Streamlined Compact Header Banner with Dual-Tone Gradient Simulated Look */}
+      {/* Streamlined Compact Header Banner */}
       <View style={styles.headerBanner}>
         <View style={styles.headerGlowOverlay} />
         <View style={styles.logoBadge}>
@@ -382,8 +413,8 @@ export default function AdmissionScreen() {
 
           <View style={styles.photoUploadContainer}>
             <TouchableOpacity 
-              style={styles.photoUploadBox}
-              onPress={openPicker}
+              style={styles.photoUploadBox} 
+              onPress={openPicker} 
               activeOpacity={0.85}
             >
               {photoUri ? (
@@ -566,7 +597,7 @@ export default function AdmissionScreen() {
             <Text style={styles.label}>AADHAR NUMBER (OPTIONAL)</Text>
             <TextInput
               style={styles.inputStandard}
-              placeholder="Enter 12 digit Aadhar"
+              placeholder="Enter 12 digit number"
               placeholderTextColor={COLORS.gray}
               keyboardType="numeric"
               maxLength={12}
@@ -888,9 +919,9 @@ const styles = StyleSheet.create({
     opacity: 0.22,
   },
 
-  // Streamlined Compact Header Banner with Dual-Tone Gradient Simulated Look
+  // Streamlined Compact Header Banner
   headerBanner: { 
-    backgroundColor: '#0284C7', // Base deep blue tone
+    backgroundColor: '#0284C7',
     paddingVertical: 16, 
     paddingHorizontal: 4, 
     alignItems: 'center', 
@@ -904,7 +935,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 16,
     borderBottomWidth: 3,
-    borderBottomColor: '#38BDF8', // Gradient highlight line effect
+    borderBottomColor: '#38BDF8',
   },
   headerGlowOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(56, 189, 248, 0.25)' },
   logoBadge: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', marginBottom: 6, borderWidth: 2, borderColor: 'rgba(255, 255, 255, 0.9)', elevation: 4 },
@@ -914,7 +945,7 @@ const styles = StyleSheet.create({
   sessionBadge: { marginTop: 6, backgroundColor: 'rgba(2, 132, 199, 0.6)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.3)' },
   sessionBadgeText: { color: '#ffffff', fontSize: 8, fontWeight: '800', letterSpacing: 0.5 },
 
-  // Photo Upload Container inside Form
+  // Photo Upload Container
   sizeBadge: { backgroundColor: '#fef3c7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10, borderWidth: 1, borderColor: '#fde68a', marginLeft: 'auto' },
   sizeBadgeText: { fontSize: 7, fontWeight: '800', color: '#92400e' },
   photoUploadContainer: { marginVertical: 10 },
@@ -935,7 +966,7 @@ const styles = StyleSheet.create({
   noticeAlert: { backgroundColor: '#fef3c7', marginTop: 6, marginBottom: 14, padding: 8, borderRadius: 10, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#fde68a' },
   noticeAlertText: { color: '#92400e', fontSize: 8, fontWeight: '800', flex: 1 },
 
-  // Glassmorphism Form Card Wrapper with increased spacing and gaps
+  // Glassmorphism Form Card Wrapper
   formGlassCard: {
     marginHorizontal: 2,
     marginTop: 10,
@@ -950,19 +981,19 @@ const styles = StyleSheet.create({
     shadowRadius: 24,
     overflow: 'hidden',
   },
-  formBody: { padding: 10 }, // Increased padding for better internal spacing
+  formBody: { padding: 10 },
 
   sectionHeaderBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.95)', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, marginTop: 16, marginBottom: 12, borderLeftWidth: 4, borderWidth: 1, borderColor: '#e2e8f0' },
   sectionIconBox: { width: 24, height: 24, borderRadius: 6, justifyContent: 'center', alignItems: 'center', marginRight: 8 },
   sectionHeaderText: { color: COLORS.primary, fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
 
-  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }, // Increased bottom margin to eliminate crowding
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
   inputGroupHalf: { width: '48%' },
   inputGroupThird: { width: '31%' },
   inputGroupThirdSmall: { width: '28%' },
   inputGroupWide: { width: '69%' },
-  inputGroupFull: { marginBottom: 12 }, // Increased vertical gap for full-width fields
-  label: { fontSize: 8.5, fontWeight: '800', color: '#475569', marginBottom: 5, letterSpacing: 0.3 }, // Improved gap between label and input box
+  inputGroupFull: { marginBottom: 12 },
+  label: { fontSize: 8.5, fontWeight: '800', color: '#475569', marginBottom: 5, letterSpacing: 0.3 },
   required: { color: '#ef4444' },
 
   inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: 8, borderWidth: 1, borderColor: '#CBD5E1', paddingHorizontal: 8, height: 42, justifyContent: 'space-between' },

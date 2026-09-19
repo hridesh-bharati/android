@@ -1,19 +1,20 @@
 {
   "expo": {
     "name": "DrishteeApp",
-    "slug": "DrishteeApp",
+    "slug": "drishteeapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "ios": {
-      "supportsTablet": true
-    },
     "android": {
+      "package": "com.drishteeindia.drishteeapp",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/icon.png"
       }
+    },
+    "ios": {
+      "supportsTablet": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -23,7 +24,10 @@
       "expo-sharing"
     ],
     "extra": {
-      "apiUrl": "https://drishteeindia.com"
+      "apiUrl": "https://drishteeindia.com",
+      "eas": {
+        "projectId": "1d02f023-aeb9-47cd-9ad7-41f4f14cf552"
+      }
     }
   }
 }
