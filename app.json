@@ -6,6 +6,9 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "android": {
       "package": "com.drishteeindia.drishteeapp",
       "adaptiveIcon": {
@@ -21,7 +24,13 @@
     },
     "plugins": [
       "@react-native-community/datetimepicker",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you upload student admission picture."
+        }
+      ]
     ],
     "extra": {
       "apiUrl": "https://drishteeindia.com",

@@ -373,7 +373,7 @@ export default function AdmissionScreen() {
 
   // ===================== FORM VIEW =====================
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60, paddingHorizontal: 2 }}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 2 }}>
       {/* Background Glowing Orbs */}
       <View style={styles.bgGlowOrbTopLeft} />
       <View style={styles.bgGlowOrbBottomRight} />
