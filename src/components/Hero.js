@@ -1,3 +1,4 @@
+// src/components/Hero.js
 import React, { useRef, useState, useEffect } from 'react';
 import {
   StyleSheet,
@@ -51,10 +52,16 @@ export default function Hero() {
     const timer = setInterval(() => {
       setActiveIndex((prevIndex) => {
         const nextIndex = prevIndex === slides.length - 1 ? 0 : prevIndex + 1;
-        flatListRef.current?.scrollToIndex({
-          index: nextIndex,
-          animated: true,
-        });
+        if (flatListRef.current) {
+          try {
+            flatListRef.current.scrollToIndex({
+              index: nextIndex,
+              animated: true,
+            });
+          } catch (e) {
+            // Fallback safety for index range
+          }
+        }
         return nextIndex;
       });
     }, 3000);
@@ -99,7 +106,9 @@ export default function Hero() {
 
   const onScroll = (event) => {
     const slideIndex = Math.round(event.nativeEvent.contentOffset.x / width);
-    setActiveIndex(slideIndex);
+    if (slideIndex >= 0 && slideIndex < slides.length) {
+      setActiveIndex(slideIndex);
+    }
   };
 
   return (
@@ -140,6 +149,7 @@ export default function Hero() {
 const styles = StyleSheet.create({
   wrapper: {
     position: 'relative',
+    marginBottom: 8,
   },
   navyBackdrop: {
     position: 'absolute',

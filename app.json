@@ -30,7 +30,8 @@
         {
           "photosPermission": "The app accesses your photos to let you upload student admission picture."
         }
-      ]
+      ],
+      "expo-image"
     ],
     "extra": {
       "apiUrl": "https://drishteeindia.com",

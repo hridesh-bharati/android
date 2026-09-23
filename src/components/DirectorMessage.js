@@ -1,3 +1,4 @@
+// src/components/DirectorMessage.js
 import React from 'react';
 import { StyleSheet, Text, View, Image, Platform, Linking, TouchableOpacity } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -14,43 +15,62 @@ const DIRECTOR_INFO = {
 export default function DirectorMessage() {
   const handleCall = () => Linking.openURL(`tel:${DIRECTOR_INFO.phone}`);
 
-  const renderFooterItem = (icon, text, onPress, isPhone = false) => {
-    const Component = onPress ? TouchableOpacity : View;
-    return (
-      <Component style={styles.footerItem} activeOpacity={0.7} onPress={onPress}>
-        <MaterialIcons name={icon} size={13} color={isPhone ? '#0284c7' : '#0284c7'} />
-        <Text style={[styles.footerText, isPhone && styles.phoneText]}>{text}</Text>
-      </Component>
-    );
-  };
-
   return (
     <View style={styles.container}>
+      {/* Section Header */}
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Director's Message</Text>
+        <View style={styles.titleRow}>
+          <View style={styles.titleIndicator} />
+          <Text style={styles.sectionTitle}>Director's Message</Text>
+        </View>
       </View>
 
+      {/* Modern Editorial Card */}
       <View style={styles.card}>
-        <View style={styles.glowBlob} />
+        {/* Left Accent Strip */}
+        <View style={styles.leftAccentBar} />
 
-        <View style={styles.contentRow}>
-          <View style={styles.imageWrapper}>
-            <Image source={require('../../assets/team1.avif')} style={styles.directorImage} resizeMode="cover" />
-            <View style={styles.badgeIcon}>
-              <MaterialIcons name="verified" size={14} color="#0284c7" />
+        <View style={styles.cardInner}>
+          {/* Top Row: Image & Info */}
+          <View style={styles.contentRow}>
+            <View style={styles.imageWrapper}>
+              <Image source={require('../../assets/team1.avif')} style={styles.directorImage} resizeMode="cover" />
+              <View style={styles.badgeIcon}>
+                <MaterialIcons name="verified" size={13} color="#0284c7" />
+              </View>
+            </View>
+
+            <View style={styles.textContainer}>
+              <Text style={styles.directorName}>{DIRECTOR_INFO.name}</Text>
+              <Text style={styles.directorRole}>{DIRECTOR_INFO.role}</Text>
+              
+              <View style={styles.quoteIconContainer}>
+                <MaterialIcons name="format-quote" size={18} color="#0284c7" style={{ opacity: 0.5 }} />
+              </View>
             </View>
           </View>
 
-          <View style={styles.textContainer}>
-            <Text style={styles.directorName}>{DIRECTOR_INFO.name}</Text>
-            <Text style={styles.directorRole}>{DIRECTOR_INFO.role}</Text>
-            <Text style={styles.messageText} numberOfLines={4}>"{DIRECTOR_INFO.message}"</Text>
-          </View>
-        </View>
+          {/* Message Text */}
+          <Text style={styles.messageText} numberOfLines={4}>
+            {DIRECTOR_INFO.message}
+          </Text>
 
-        <View style={styles.cardFooter}>
-          {renderFooterItem('location-pin', DIRECTOR_INFO.location)}
-          {renderFooterItem('phone', DIRECTOR_INFO.phone, handleCall, true)}
+          {/* Footer Action Bar */}
+          <View style={styles.cardFooter}>
+            <View style={styles.footerItem}>
+              <MaterialIcons name="location-pin" size={14} color="#64748b" />
+              <Text style={styles.footerText} numberOfLines={1}>{DIRECTOR_INFO.location}</Text>
+            </View>
+
+            <TouchableOpacity 
+              style={styles.callButton} 
+              activeOpacity={0.8}
+              onPress={handleCall}
+            >
+              <MaterialIcons name="phone" size={13} color="#ffffff" />
+              <Text style={styles.callButtonText}>Call Direct</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </View>
@@ -59,116 +79,145 @@ export default function DirectorMessage() {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 6,
-    marginBottom: 30,
+    marginVertical: 10,
+    marginBottom: 35,
   },
   sectionHeader: { 
     paddingHorizontal: 16, 
-    marginTop: 14, 
+    marginTop: 10, 
     marginBottom: 10,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  titleIndicator: {
+    width: 4,
+    height: 16,
+    backgroundColor: '#0284c7',
+    borderRadius: 2,
+  },
   sectionTitle: { 
-    fontSize: 15, 
+    fontSize: 16, 
     fontWeight: '800', 
     color: COLORS.primary,
     letterSpacing: 0.3,
   },
   card: {
     marginHorizontal: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    backgroundColor: '#F8FAFC', // Ultra clean modern background tint
     borderRadius: 22,
-    padding: 16,
-    borderWidth: 1.5,
-    borderColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     overflow: 'hidden',
     position: 'relative',
     ...Platform.select({
       ios: {
-        shadowColor: '#0284c7',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
+        shadowColor: '#64748B',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 6,
       },
       android: {
-        elevation: 4,
+        elevation: 1,
       },
     }),
   },
-  glowBlob: {
+  leftAccentBar: {
     position: 'absolute',
-    top: -30,
-    right: -30,
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 5,
     backgroundColor: '#0284c7',
-    opacity: 0.15,
+  },
+  cardInner: {
+    padding: 16,
+    paddingLeft: 20, // Extra space due to accent bar
   },
   contentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 12,
+    marginBottom: 10,
   },
   imageWrapper: {
     position: 'relative',
   },
   directorImage: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#f1f5f9',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#E2E8F0',
     borderWidth: 2,
-    borderColor: '#bae6fd',
+    borderColor: '#ffffff',
   },
   badgeIcon: {
     position: 'absolute',
     bottom: 0,
     right: 0,
     backgroundColor: '#ffffff',
-    borderRadius: 8,
+    borderRadius: 9,
     padding: 2,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   textContainer: {
     flex: 1,
   },
   directorName: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#0f172a',
+    fontSize: 15.5,
+    fontWeight: '800',
+    color: '#0F172A',
   },
   directorRole: {
     fontSize: 11,
     color: '#0284c7',
-    fontWeight: '600',
-    marginBottom: 6,
+    fontWeight: '700',
+    marginTop: 1,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   messageText: {
-    fontSize: 11.5,
+    fontSize: 12,
     color: '#475569',
-    lineHeight: 16,
+    lineHeight: 18,
     fontStyle: 'italic',
+    marginBottom: 14,
   },
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 14,
-    paddingTop: 10,
+    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(226, 232, 240, 0.6)',
+    borderTopColor: '#E2E8F0',
   },
   footerItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
+    flex: 1,
+    marginRight: 10,
   },
   footerText: {
     fontSize: 11,
-    color: '#64748b',
+    color: '#64748B',
     fontWeight: '600',
   },
-  phoneText: {
-    color: '#0284c7',
+  callButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0284c7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 5,
+  },
+  callButtonText: {
+    fontSize: 11.5,
+    color: '#ffffff',
+    fontWeight: '700',
   },
 });

@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
   outerContainer: {
     marginHorizontal: 16,
     marginTop: 18,
+    marginBottom: 20, // <-- Yahan bottom margin add kar diya hai
   },
   headerContainer: {
     marginBottom: 12,

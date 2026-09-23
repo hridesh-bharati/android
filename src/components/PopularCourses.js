@@ -1,3 +1,4 @@
+// src/components/PopularCourses.js
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -15,7 +16,6 @@ export default function PopularCourses() {
   ];
 
   const handlePress = () => {
-    // Agar aapka bottom tab 'Courses' hai
     navigation.navigate('Courses');
   };
 
@@ -93,15 +93,16 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.9)',
+    // 🚀 Soft clean shadow replaced from harsh black shadow
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
+        shadowColor: '#64748b',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
       },
       android: {
-        elevation: 4,
+        elevation: 2,
       },
     }),
   },
