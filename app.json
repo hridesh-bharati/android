@@ -11,13 +11,21 @@
     ],
     "android": {
       "package": "com.drishteeindia.drishteeapp",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/icon.png"
-      }
+      },
+      "softwareKeyboardLayoutMode": "resize",
+      "permissions": [
+        "NOTIFICATIONS",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED"
+      ]
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.drishteeindia.drishteeapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -31,7 +39,16 @@
           "photosPermission": "The app accesses your photos to let you upload student admission picture."
         }
       ],
-      "expo-image"
+      "expo-image",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#0284c7",
+          "sounds": []
+        }
+      ],
+      "expo-font"
     ],
     "extra": {
       "apiUrl": "https://drishteeindia.com",

@@ -1,11 +1,17 @@
 // src/components/Header.js
 import React, { useState, useContext } from 'react';
-import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Modal, ScrollView, Dimensions, Platform } from 'react-native';
+import { 
+  StyleSheet, Text, View, TextInput, Image, 
+  TouchableOpacity, Modal, ScrollView, 
+  Dimensions, Platform 
+} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { COLORS } from '../constants/theme';
 import { AuthContext } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
+import NotificationPanel from './NotificationPanel';
 
 const { width } = Dimensions.get('window');
 
@@ -17,7 +23,9 @@ const shadowStyle = Platform.select({
 export default function Header() {
   const navigation = useNavigation();
   const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [notificationVisible, setNotificationVisible] = useState(false);
   const { user, logout } = useContext(AuthContext);
+  const { unreadCount } = useNotifications();
 
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
@@ -53,7 +61,7 @@ export default function Header() {
   return (
     <>
       <View style={styles.header}>
-        {/* Left: Logo & Title with Subtitle */}
+        {/* Left: Logo & Title */}
         <View style={styles.headerLeft}>
           <Image
             source={require('../../assets/logo.png')}
@@ -76,17 +84,26 @@ export default function Header() {
           />
         </View>
 
-        {/* Right: Bell Icon, Chat Icon & Menu Button */}
+        {/* Right: Bell, Chat, Menu */}
         <View style={styles.headerRight}>
-          <View style={styles.bellContainer}>
+          {/* 🔔 BELL - NOW OPENS NOTIFICATION PANEL */}
+          <TouchableOpacity
+            style={styles.bellContainer}
+            onPress={() => setNotificationVisible(true)}
+            activeOpacity={0.7}
+          >
             <MaterialIcons name="notifications-none" size={20} color="#ffffff" />
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>3</Text>
-            </View>
-          </View>
+            {unreadCount > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
 
-          {/* 🚀 Chat Icon Added Right After Bell Icon */}
-          <TouchableOpacity 
+          {/* Chat Icon */}
+          <TouchableOpacity
             onPress={() => {
               const parentNav = navigation.getParent();
               if (parentNav) {
@@ -94,18 +111,25 @@ export default function Header() {
               } else {
                 navigation.navigate('ChatScreen');
               }
-            }} 
-            style={styles.chatTouch} 
+            }}
+            style={styles.chatTouch}
             activeOpacity={0.8}
           >
             <MaterialIcons name="chat" size={19} color="#ffffff" />
           </TouchableOpacity>
 
+          {/* Menu Icon */}
           <TouchableOpacity onPress={toggleSidebar} style={styles.menuTouch} activeOpacity={0.8}>
             <MaterialIcons name="menu" size={22} color="#ffffff" />
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* 🔔 NOTIFICATION PANEL */}
+      <NotificationPanel
+        visible={notificationVisible}
+        onClose={() => setNotificationVisible(false)}
+      />
 
       {/* Sidebar Drawer */}
       <Modal
@@ -156,7 +180,7 @@ export default function Header() {
               <SidebarItem icon="file-document-edit-outline" label="Online Admission" iconType="community" onPress={() => navigateTo('MainTabs', { screen: 'Admission' })} />
               <SidebarItem icon="headset-mic" label="Contact Us" onPress={() => navigateTo('ContactUs')} />
               <SidebarItem icon="help-outline" label="Help & Support" onPress={() => navigateTo('ContactUs')} />
-              
+
               {user ? (
                 <SidebarItem icon="logout" label="Logout" color="#ef4444" onPress={handleLogout} />
               ) : (
@@ -264,19 +288,22 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: 'absolute',
-    top: -2,
-    right: -2,
-    backgroundColor: COLORS.secondary,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    top: -4,
+    right: -4,
+    backgroundColor: '#ef4444',
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 3,
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
   },
   badgeText: {
     color: '#fff',
-    fontSize: 7,
-    fontWeight: 'bold',
+    fontSize: 8,
+    fontWeight: '900',
   },
   menuTouch: {
     padding: 2,

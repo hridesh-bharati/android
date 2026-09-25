@@ -356,56 +356,55 @@ export default function CoursesScreen({ navigation }) {
 
       {/* Bottom Sheet Offcanvas Modal */}
       <Modal animationType="fade" onRequestClose={closeBottomSheet} transparent={true} visible={bottomSheetVisible} statusBarTranslucent>
-        <Pressable onPress={closeBottomSheet} style={styles.sheetOverlay}>
+        <View style={styles.sheetOverlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={closeBottomSheet} />
           <Animated.View style={[styles.bottomSheet, { transform: [{ translateY: slideAnim }] }]}>
-            <Pressable onPress={(e) => e.stopPropagation()} style={styles.flex1}>
-              <View style={styles.dragHandleContainer}>
-                <View style={styles.dragHandle} />
-              </View>
+            <View style={styles.dragHandleContainer}>
+              <View style={styles.dragHandle} />
+            </View>
 
-              <View style={styles.sheetHeader}>
-                <Text style={styles.sheetMainTitle}>Select Course Category</Text>
-                <TouchableOpacity activeOpacity={0.7} onPress={closeBottomSheet} style={styles.sheetCloseBtn}>
-                  <MaterialIcons name="close" size={18} color="#64748b" />
-                </TouchableOpacity>
-              </View>
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetMainTitle}>Select Course Category</Text>
+              <TouchableOpacity activeOpacity={0.7} onPress={closeBottomSheet} style={styles.sheetCloseBtn}>
+                <MaterialIcons name="close" size={18} color="#64748b" />
+              </TouchableOpacity>
+            </View>
 
-              <ScrollView style={styles.sheetBody} showsVerticalScrollIndicator={false}>
-                {CATEGORIES_DATA.map((category) => {
-                  const count = getCategoryCount(category.id);
-                  const isActive = selectedCategory === category.id;
+            <ScrollView style={styles.sheetBody} showsVerticalScrollIndicator={false}>
+              {CATEGORIES_DATA.map((category) => {
+                const count = getCategoryCount(category.id);
+                const isActive = selectedCategory === category.id;
 
-                  return (
-                    <TouchableOpacity 
-                      key={category.id} 
-                      onPress={() => {
-                        setSelectedCategory(category.id);
-                        closeBottomSheet();
-                      }} 
-                      style={[styles.sheetItem, isActive && styles.sheetItemActive]}
-                      activeOpacity={0.8}
-                    >
-                      <View style={[styles.iconContainerSm, { backgroundColor: isActive ? '#0284c7' : `${category.color}15` }]}>
-                        <MaterialIcons name={category.icon} size={20} color={isActive ? '#ffffff' : category.color} />
-                      </View>
-                      <View style={styles.flex1}>
-                        <Text style={[styles.sheetItemLabel, isActive && styles.sheetItemLabelActive]}>
-                          {category.label}
-                        </Text>
-                        <Text style={styles.sheetItemCount}>{count} Courses Available</Text>
-                      </View>
-                      {isActive && <MaterialIcons name="check-circle" size={20} color="#0284c7" />}
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
+                return (
+                  <TouchableOpacity 
+                    key={category.id} 
+                    onPress={() => {
+                      setSelectedCategory(category.id);
+                      closeBottomSheet();
+                    }} 
+                    style={[styles.sheetItem, isActive && styles.sheetItemActive]}
+                    activeOpacity={0.8}
+                  >
+                    <View style={[styles.iconContainerSm, { backgroundColor: isActive ? '#0284c7' : `${category.color}15` }]}>
+                      <MaterialIcons name={category.icon} size={20} color={isActive ? '#ffffff' : category.color} />
+                    </View>
+                    <View style={styles.flex1}>
+                      <Text style={[styles.sheetItemLabel, isActive && styles.sheetItemLabelActive]}>
+                        {category.label}
+                      </Text>
+                      <Text style={styles.sheetItemCount}>{count} Courses Available</Text>
+                    </View>
+                    {isActive && <MaterialIcons name="check-circle" size={20} color="#0284c7" />}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
 
-              <View style={styles.sheetFooter}>
-                <Text style={styles.footerText}>Drishtee Computer Centre • Explore & Excel</Text>
-              </View>
-            </Pressable>
+            <View style={styles.sheetFooter}>
+              <Text style={styles.footerText}>Drishtee Computer Centre • Explore & Excel</Text>
+            </View>
           </Animated.View>
-        </Pressable>
+        </View>
       </Modal>
     </View>
   );
@@ -690,7 +689,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   bottomSheet: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: 'rgba(255, 255, 255, 0.98)',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     maxHeight: height * 0.75,
@@ -700,6 +699,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -6 },
     shadowOpacity: 0.15,
     shadowRadius: 16,
+    width: '100%',
   },
   dragHandleContainer: {
     alignItems: 'center',

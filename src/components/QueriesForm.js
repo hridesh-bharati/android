@@ -11,7 +11,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { sendEmailNotification, supportTemplate } from "../services/emailService";
 
 const COLORS = {
-  background: "#FFF5F5",        // Soft Drishtee peach/pink theme background
+  background: "#FFF5F5",        
   primaryRed: "#FF5252",      
   textDark: "#111827",
   textSecondary: "#6B7280",

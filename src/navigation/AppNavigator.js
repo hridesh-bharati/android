@@ -8,51 +8,56 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { AuthContext } from '../context/AuthContext';
+import { NotificationProvider, useNotifications } from '../context/NotificationContext';
 import { navigationRef } from '../services/NavigationService';
 
-// Auth Screens
 import Login from '../auth/Login';
 import Signup from '../auth/Signup';
 import ForgotPassword from '../auth/ForgotPassword';
 
-// Main Screens
 import HomeScreen from '../screens/HomeScreen';
 import CoursesScreen from '../screens/CoursesScreen';
 import AdmissionScreen from '../screens/AdmissionScreen';
-import NotesScreen from '../screens/NotesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
-// Dashboards
 import AdminDashboard from '../dashboard/admin/AdminDashboard';
 import StudentDashboard from '../dashboard/student/StudentDashboard';
-
-// Fee Management Screen
 import FeePage from '../dashboard/admin/studentManagement/fees/FeePage';
-
-// Student Profile & Provider & Privacy Security
 import StudentProfile from '../dashboard/admin/studentManagement/StudentProfile';
 import AdmissionProvider from '../dashboard/admin/studentManagement/AdmissionProvider';
 import PrivecySecurity from "../dashboard/student/PrivecySecurity";
 
-// Exam & Practice Navigators (Student Side)
 import ExamNavigator from '../dashboard/student/exams/ExamNavigator';
 import PracticeNavigator from '../dashboard/student/practice/PracticeNavigator';
-
-// Notes Download Component (Student Notes View)
 import NotesDownload from '../components/notes/NotesDownload';
-
-// Queries / Contact Us Form Component
 import QueriesForm from '../components/QueriesForm';
 import TeamScreen from '../screens/TeamScreen';
 import Verification from '../screens/VerificationScreen';
 import GalleryScreen from '../components/gallery/GalleryScreen';
-import ChatScreen from '../components/ChatScreen'; // 👈 Imported Chat Screen
-
+import ChatScreen from '../components/ChatScreen';
 import AdminExamNavigator from '../dashboard/admin/examManagement/ExamNavigator';
 import CertificateNavigator from '../dashboard/student/Certificate/CertificateNavigator';
 
+// ⬇️ NEW — Popup Banner
+import NotificationBanner from '../components/NotificationBanner';
+
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+
+/* ============================================================
+   GLOBAL BANNER WRAPPER
+   Ye component NavigationContainer ke andar hoga
+   taaki useNavigation kaam kare
+   ============================================================ */
+function GlobalBanner() {
+  const { bannerNotification, dismissBanner } = useNotifications();
+  return (
+    <NotificationBanner
+      notification={bannerNotification}
+      onDismiss={dismissBanner}
+    />
+  );
+}
 
 function MainTabNavigator() {
   const { user, role } = useContext(AuthContext);
@@ -81,15 +86,8 @@ function MainTabNavigator() {
           shadowOpacity: 0.1,
           shadowRadius: 10,
         },
-        tabBarItemStyle: {
-          marginVertical: 2,
-          marginHorizontal: 2,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          marginTop: 4,
-        },
+        tabBarItemStyle: { marginVertical: 2, marginHorizontal: 2 },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: 4 },
         tabBarIcon: ({ color, focused }) => {
           let iconColor = focused ? color : '#64748b';
 
@@ -172,37 +170,39 @@ export default function AppNavigator() {
   }
 
   return (
-    <NavigationContainer ref={navigationRef}>
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="MainTabs">
-        <Stack.Screen name="MainTabs" component={MainTabNavigator} />
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="Signup" component={Signup} />
-        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
-        <Stack.Screen name="AdminPanel" component={AdminDashboard} />
-        <Stack.Screen name="StudentPanel" component={StudentDashboard} />
-        <Stack.Screen name="FeePage" component={FeePage} />
-        <Stack.Screen name="TeamScreen" component={TeamScreen} />
-        <Stack.Screen name="Verification" component={Verification} />
-        <Stack.Screen name="Gallery" component={GalleryScreen} /> 
-        <Stack.Screen name="ChatScreen" component={ChatScreen} /> 
-        <Stack.Screen name="PrivecySecurity" component={PrivecySecurity} />
+    <NotificationProvider>
+      <NavigationContainer ref={navigationRef}>
+        <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="MainTabs">
+          <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="Signup" component={Signup} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+          <Stack.Screen name="AdminPanel" component={AdminDashboard} />
+          <Stack.Screen name="StudentPanel" component={StudentDashboard} />
+          <Stack.Screen name="FeePage" component={FeePage} />
+          <Stack.Screen name="TeamScreen" component={TeamScreen} />
+          <Stack.Screen name="Verification" component={Verification} />
+          <Stack.Screen name="Gallery" component={GalleryScreen} />
+          <Stack.Screen name="ChatScreen" component={ChatScreen} />
+          <Stack.Screen name="PrivecySecurity" component={PrivecySecurity} />
+          <Stack.Screen name="ExamModule" component={AdminExamNavigator} />
+          <Stack.Screen name="ExamNavigator" component={ExamNavigator} />
+          <Stack.Screen name="PracticeNavigator" component={PracticeNavigator} />
+          <Stack.Screen name="CertificateNavigator" component={CertificateNavigator} />
+          <Stack.Screen name="StudentProfile">
+            {props => (
+              <AdmissionProvider>
+                <StudentProfile {...props} />
+              </AdmissionProvider>
+            )}
+          </Stack.Screen>
+          <Stack.Screen name="ContactUs" component={QueriesForm} />
+        </Stack.Navigator>
 
-        {/* Exam Modules */}
-        <Stack.Screen name="ExamModule" component={AdminExamNavigator} />
-        <Stack.Screen name="ExamNavigator" component={ExamNavigator} />
-        <Stack.Screen name="PracticeNavigator" component={PracticeNavigator} />
-        <Stack.Screen name="CertificateNavigator" component={CertificateNavigator} />
-        <Stack.Screen name="StudentProfile">
-          {props => (
-            <AdmissionProvider>
-              <StudentProfile {...props} />
-            </AdmissionProvider>
-          )}
-        </Stack.Screen>
-
-        <Stack.Screen name="ContactUs" component={QueriesForm} />
-      </Stack.Navigator>
-    </NavigationContainer>
+        {/* ⬇️ WhatsApp-style popup banner — TOP of everything */}
+        <GlobalBanner />
+      </NavigationContainer>
+    </NotificationProvider>
   );
 }
 
@@ -233,18 +233,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  homeActiveBg: {
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-  },
-  coursesActiveBg: {
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
-  },
-  notesActiveBg: {
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-  },
-  dashboardActiveBg: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-  },
+  homeActiveBg: { backgroundColor: 'rgba(239, 68, 68, 0.15)' },
+  coursesActiveBg: { backgroundColor: 'rgba(139, 92, 246, 0.15)' },
+  notesActiveBg: { backgroundColor: 'rgba(16, 185, 129, 0.15)' },
+  dashboardActiveBg: { backgroundColor: 'rgba(245, 158, 11, 0.15)' },
   centerButtonWrapper: {
     position: 'absolute',
     top: -26,

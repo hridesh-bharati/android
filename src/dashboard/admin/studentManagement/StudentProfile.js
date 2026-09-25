@@ -1,6 +1,6 @@
 // src/dashboard/admin/studentManagement/StudentProfile.js
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, ScrollView, Image, TextInput, TouchableOpacity, ActivityIndicator, Switch, Alert, Dimensions } from "react-native";
+import { StyleSheet, Text, View, ScrollView, Image, TextInput, TouchableOpacity, ActivityIndicator, Switch, Alert, Dimensions, Platform } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { doc, updateDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../../services/firebase";
@@ -59,8 +59,8 @@ export default function StudentProfile({ route, navigation }) {
   if (!student) {
     return (
       <View style={styles.center}>
-        <Text style={{ fontWeight: "700", color: "#64748b" }}>Student Not Found</Text>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+        <Text style={{ fontWeight: "700", color: "#64748b", fontSize: 14 }}>Student Not Found</Text>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.8}>
           <Text style={styles.backBtnText}>Go Back</Text>
         </TouchableOpacity>
       </View>
@@ -74,11 +74,13 @@ export default function StudentProfile({ route, navigation }) {
         <Text style={styles.infoLabel}>{label}</Text>
       </View>
       {isEditing ? (
-        <TextInput 
-          style={styles.inputEdit} 
-          value={formData[key] || ""} 
-          onChangeText={(val) => handleChange(key, val)} 
+        <TextInput
+          style={styles.inputEdit}
+          value={formData[key] || ""}
+          onChangeText={(val) => handleChange(key, val)}
           keyboardType={keyboardType}
+          placeholder={`Enter ${label.toLowerCase()}`}
+          placeholderTextColor="#94a3b8"
         />
       ) : (
         <Text style={styles.infoValue}>{safe(formData[key])}</Text>
@@ -95,20 +97,20 @@ export default function StudentProfile({ route, navigation }) {
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 60 }}>
         {/* Top Header */}
         <View style={styles.topBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn} activeOpacity={0.7}>
             <MaterialIcons name="arrow-back" size={20} color="#334155" />
           </TouchableOpacity>
           <Text style={styles.topBarTitle}>Profile Manager</Text>
           {!isEditing ? (
-            <TouchableOpacity style={styles.editBtn} onPress={() => setIsEditing(true)}>
+            <TouchableOpacity style={styles.editBtn} onPress={() => setIsEditing(true)} activeOpacity={0.8}>
               <Text style={styles.editBtnText}>Edit</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.editActions}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => { setIsEditing(false); setFormData(student); }}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => { setIsEditing(false); setFormData(student); }} activeOpacity={0.8}>
                 <Text style={styles.cancelBtnText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={isSaving}>
+              <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={isSaving} activeOpacity={0.8}>
                 <Text style={styles.saveBtnText}>{isSaving ? "Saving..." : "Save"}</Text>
               </TouchableOpacity>
             </View>
@@ -142,10 +144,10 @@ export default function StudentProfile({ route, navigation }) {
               <MaterialIcons name={stat.icon} size={18} color={stat.color} style={{ marginBottom: 4 }} />
               <Text style={styles.statLabel}>{stat.label}</Text>
               {isEditing ? (
-                <TextInput 
-                  style={styles.inputStatEdit} 
-                  value={String(formData[stat.key] || "")} 
-                  onChangeText={(val) => handleChange(stat.key, val)} 
+                <TextInput
+                  style={styles.inputStatEdit}
+                  value={String(formData[stat.key] || "")}
+                  onChangeText={(val) => handleChange(stat.key, val)}
                 />
               ) : (
                 <Text style={styles.statValue} numberOfLines={1}>{safe(formData[stat.key])}</Text>
@@ -154,7 +156,7 @@ export default function StudentProfile({ route, navigation }) {
           ))}
         </View>
 
-        {/* Modular Quick Action Buttons Component */}
+        {/* Quick Actions Component */}
         <StudentQuickActions studentData={formData} />
 
         {/* Personal Info Box (Glassmorphism) */}
@@ -169,7 +171,7 @@ export default function StudentProfile({ route, navigation }) {
           {renderField("Email", "email", "email", "email-address")}
           {renderField("Gender", "gender", "wc")}
           {renderField("Date of Birth", "dob", "cake")}
-          {renderField("Aadhar", "aadharNo", "fingerprint", "numeric")}
+          {renderField("Aadhaar", "aadharNo", "fingerprint", "numeric")}
         </View>
 
         {/* Communication Address Box (Glassmorphism) */}
@@ -190,10 +192,10 @@ export default function StudentProfile({ route, navigation }) {
                   <Text style={styles.infoLabel}>{addr.label}</Text>
                 </View>
                 {isEditing ? (
-                  <TextInput 
-                    style={styles.inputEdit} 
-                    value={formData[addr.key] || ""} 
-                    onChangeText={(val) => handleChange(addr.key, val)} 
+                  <TextInput
+                    style={styles.inputEdit}
+                    value={formData[addr.key] || ""}
+                    onChangeText={(val) => handleChange(addr.key, val)}
                   />
                 ) : (
                   <Text style={styles.infoValue} numberOfLines={1}>{safe(formData[addr.key])}</Text>
@@ -207,15 +209,15 @@ export default function StudentProfile({ route, navigation }) {
               <Text style={styles.infoLabel}>FULL ADDRESS STRING</Text>
             </View>
             {isEditing ? (
-              <TextInput 
-                style={[styles.inputEdit, { height: 60, textAlignVertical: 'top', paddingTop: 6 }]} 
-                multiline 
-                numberOfLines={3} 
-                value={formData.address || ""} 
-                onChangeText={(val) => handleChange("address", val)} 
+              <TextInput
+                style={[styles.inputEdit, { height: 60, textAlignVertical: 'top', paddingTop: 6, marginLeft: 0 }]}
+                multiline
+                numberOfLines={3}
+                value={formData.address || ""}
+                onChangeText={(val) => handleChange("address", val)}
               />
             ) : (
-              <Text style={styles.infoValue}>{safe(formData.address)}</Text>
+              <Text style={[styles.infoValue, { marginLeft: 0 }]}>{safe(formData.address)}</Text>
             )}
           </View>
         </View>
@@ -224,10 +226,10 @@ export default function StudentProfile({ route, navigation }) {
         <View style={[styles.glassSectionBox, { marginTop: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             <View style={[styles.shieldIcon, { backgroundColor: formData.certificateDisabled ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)' }]}>
-              <MaterialIcons 
-                name={formData.certificateDisabled ? "security" : "verified-user"} 
-                size={22} 
-                color={formData.certificateDisabled ? "#ef4444" : "#10b981"} 
+              <MaterialIcons
+                name={formData.certificateDisabled ? "security" : "verified-user"}
+                size={22}
+                color={formData.certificateDisabled ? "#ef4444" : "#10b981"}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -237,7 +239,7 @@ export default function StudentProfile({ route, navigation }) {
               </Text>
             </View>
           </View>
-          <Switch 
+          <Switch
             value={!formData.certificateDisabled}
             onValueChange={async (val) => {
               const ns = !val;
@@ -259,7 +261,7 @@ export default function StudentProfile({ route, navigation }) {
 
 const styles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: "#f3e8ff", position: 'relative', overflow: 'hidden' },
-  
+
   // Background Soft Gradient Orbs (Glassmorphism Vibe)
   orbTopRight: {
     position: 'absolute',
@@ -284,16 +286,16 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
   topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 },
   topBarTitle: { fontSize: 16, fontWeight: "800", color: "#1e293b" },
-  iconBtn: { padding: 8, backgroundColor: "rgba(255, 255, 255, 0.8)", borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.9)', elevation: 2 },
+  iconBtn: { padding: 8, backgroundColor: "rgba(255, 255, 255, 0.8)", borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.9)' },
   editActions: { flexDirection: 'row', gap: 6 },
-  editBtn: { backgroundColor: "#a855f7", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 14, elevation: 3 },
+  editBtn: { backgroundColor: "#a855f7", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 14 },
   editBtnText: { color: "#ffffff", fontWeight: "700", fontSize: 12 },
   cancelBtn: { backgroundColor: "rgba(255, 255, 255, 0.7)", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 14 },
   cancelBtnText: { color: "#475569", fontWeight: "700", fontSize: 12 },
-  saveBtn: { backgroundColor: "#10b981", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 14, elevation: 3 },
+  saveBtn: { backgroundColor: "#10b981", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 14 },
   saveBtnText: { color: "#ffffff", fontWeight: "700", fontSize: 12 },
-  
-  // Glassmorphism Identity Card Styles
+
+  // Glassmorphism Identity Card Styles (Transparent & Subtle Border, No Heavy Shadow)
   glassCardWrapper: {
     width: '100%',
     borderRadius: 24,
@@ -302,7 +304,6 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.95)',
     marginBottom: 16,
-    elevation: 6,
   },
   glassCardContent: {
     flexDirection: 'row',
@@ -319,12 +320,12 @@ const styles = StyleSheet.create({
   badgeText: { fontSize: 9, fontWeight: "800", color: "#a855f7" },
 
   statsRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-  glassStatBox: { flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.75)', borderRadius: 16, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.9)', elevation: 3 },
+  glassStatBox: { flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.75)', borderRadius: 16, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.9)' },
   statLabel: { fontSize: 9, fontWeight: '800', color: '#64748b', marginBottom: 2 },
   statValue: { fontSize: 11, fontWeight: '700', color: '#1e293b' },
   inputStatEdit: { backgroundColor: 'rgba(255, 255, 255, 0.9)', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 6, width: '100%', height: 26, fontSize: 11, textAlign: 'center', fontWeight: '700', color: '#1e293b' },
-  
-  glassSectionBox: { backgroundColor: "rgba(255, 255, 255, 0.75)", borderRadius: 20, padding: 16, borderWidth: 1.5, borderColor: "rgba(255, 255, 255, 0.95)", elevation: 4 },
+
+  glassSectionBox: { backgroundColor: "rgba(255, 255, 255, 0.75)", borderRadius: 20, padding: 16, borderWidth: 1.5, borderColor: "rgba(255, 255, 255, 0.95)" },
   sectionTitle: { fontSize: 11, fontWeight: "800", color: "#a855f7", marginBottom: 12 },
   infoRow: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(226, 232, 240, 0.6)' },
   infoLabelContainer: { flexDirection: 'row', alignItems: 'center' },
