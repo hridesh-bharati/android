@@ -40,11 +40,9 @@ export const NotificationProvider = ({ children }) => {
   const [bannerNotification, setBannerNotification] = useState(null);
   const [pushToken, setPushToken] = useState(null);
 
-  // Track known notification IDs to detect NEW ones
   const knownNotifIds = useRef(new Set());
   const isFirstLoad = useRef(true);
 
-  /* ========== REGISTER PUSH TOKEN ON LOGIN ========== */
   useEffect(() => {
     if (user?.uid) {
       registerForPushNotificationsAsync(user.uid)
@@ -53,11 +51,9 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [user?.uid]);
 
-  /* ========== SETUP NOTIFICATION LISTENERS ========== */
   useEffect(() => {
     const cleanup = setupNotificationListeners((notification) => {
-      // When a push notification arrives in foreground
-      const data = notification.request.content.data;
+      const data = notification?.request?.content?.data;
       if (data) {
         setBannerNotification({
           id: data.id || `push_${Date.now()}`,
@@ -73,7 +69,6 @@ export const NotificationProvider = ({ children }) => {
     return cleanup;
   }, []);
 
-  /* ========== FETCH NOTIFICATIONS ========== */
   const loadNotifications = useCallback(async (showLoader = false) => {
     if (!user) {
       setNotifications([]);
@@ -84,23 +79,19 @@ export const NotificationProvider = ({ children }) => {
     
     try {
       const data = await fetchAllNotifications(user, role);
+      const validData = Array.isArray(data) ? data : [];
       
-      const enriched = data.map(n => ({
+      const enriched = validData.map(n => ({
         ...n,
         read: n.read || isNotificationRead(n.id),
       }));
 
-      // ⚡ Detect NEW notifications
       const newOnes = enriched.filter(n => !knownNotifIds.current.has(n.id));
       
-      // Show banner only AFTER first load (not for initial batch)
       if (!isFirstLoad.current && newOnes.length > 0) {
         const latest = newOnes[0];
-        
-        // 1. In-app banner
         setBannerNotification(latest);
         
-        // 2. Push notification (system tray) — works even if app minimized
         await sendLocalNotification(
           latest.title,
           latest.message,
@@ -113,28 +104,24 @@ export const NotificationProvider = ({ children }) => {
         );
       }
 
-      // Track IDs
       enriched.forEach(n => knownNotifIds.current.add(n.id));
       isFirstLoad.current = false;
       
       setNotifications(enriched);
       setLastFetched(new Date());
 
-      // Update app badge
       const unread = enriched.filter(n => !n.read).length;
       setBadgeCount(unread);
     } catch (error) {
       console.log('Notification load error:', error);
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   }, [user, role]);
 
-  /* ========== INITIAL LOAD + POLLING ========== */
   useEffect(() => {
     loadNotifications(true);
 
-    // Poll every 30 seconds
     const interval = setInterval(() => {
       loadNotifications(false);
     }, 30000);
@@ -142,7 +129,6 @@ export const NotificationProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, [loadNotifications]);
 
-  /* ========== FOREGROUND REFRESH ========== */
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
       if (nextState === 'active' && user) {
@@ -152,16 +138,16 @@ export const NotificationProvider = ({ children }) => {
     return () => subscription?.remove();
   }, [user, loadNotifications]);
 
-  /* ========== MARK AS READ ========== */
   const markNotificationRead = useCallback((id) => {
     markAsRead(id);
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
-    setBadgeCount(notifications.filter(n => !n.read && n.id !== id).length);
-  }, [notifications]);
+    setNotifications(prev => {
+      const updated = prev.map(n => n.id === id ? { ...n, read: true } : n);
+      const unreadCountNow = updated.filter(n => !n.read).length;
+      setBadgeCount(unreadCountNow);
+      return updated;
+    });
+  }, []);
 
-  /* ========== MARK ALL AS READ ========== */
   const markAllNotificationsRead = useCallback(() => {
     const ids = notifications.map(n => n.id);
     markAllAsRead(ids);
@@ -169,12 +155,10 @@ export const NotificationProvider = ({ children }) => {
     setBadgeCount(0);
   }, [notifications]);
 
-  /* ========== BANNER DISMISS ========== */
   const dismissBanner = useCallback(() => {
     setBannerNotification(null);
   }, []);
 
-  /* ========== COMPUTED ========== */
   const unreadCount = notifications.filter(n => !n.read).length;
   const unreadNotifications = notifications.filter(n => !n.read);
 

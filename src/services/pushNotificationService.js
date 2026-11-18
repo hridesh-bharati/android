@@ -3,7 +3,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
 /* ============================================================
@@ -11,7 +11,8 @@ import { db } from './firebase';
    ============================================================ */
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
   }),
@@ -24,14 +25,18 @@ export const registerForPushNotificationsAsync = async (userId) => {
   let token = null;
 
   try {
+    // ✅ Safe Android Notification Channel setup (Guarded against Expo Go crashes)
     if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'Default Notifications',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#0284c7',
-        sound: 'default',
-      });
+      try {
+        await Notifications.setNotificationChannelAsync('default', {
+          name: 'Default Notifications',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#0284c7',
+        });
+      } catch (channelError) {
+        console.log('⚠️ Notification channel setup skipped (Normal in Expo Go):', channelError.message);
+      }
     }
 
     if (Device.isDevice) {
@@ -53,9 +58,10 @@ export const registerForPushNotificationsAsync = async (userId) => {
         Constants?.expoConfig?.extra?.eas?.projectId ||
         Constants?.easConfig?.projectId;
 
-      token = (
-        await Notifications.getExpoPushTokenAsync({ projectId })
-      ).data;
+      const tokenData = await Notifications.getExpoPushTokenAsync(
+        projectId ? { projectId } : undefined
+      );
+      token = tokenData.data;
 
       console.log('✅ Expo Push Token:', token);
 
@@ -129,13 +135,28 @@ export const setupNotificationListeners = (onNotificationReceived) => {
   const responseSub = Notifications.addNotificationResponseReceivedListener(
     (response) => {
       console.log('👆 Notification tapped:', response);
-      const data = response.notification.request.content.data;
+      const content = response?.notification?.request?.content;
+      
+      let data = null;
+      if (content?.data && typeof content.data === 'object') {
+        data = content.data;
+      } else if (content?.dataString) {
+        try {
+          data = JSON.parse(content.dataString);
+        } catch (e) {
+          console.log('Error parsing dataString:', e);
+        }
+      }
       
       if (data?.route) {
-        const { navigate } = require('./NavigationService');
-        setTimeout(() => {
-          navigate(data.route, data.routeParams);
-        }, 500);
+        try {
+          const { navigate } = require('./NavigationService');
+          setTimeout(() => {
+            navigate(data.route, data.routeParams);
+          }, 500);
+        } catch (err) {
+          console.log('Navigation error:', err);
+        }
       }
     }
   );

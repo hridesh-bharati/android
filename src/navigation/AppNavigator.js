@@ -1,4 +1,3 @@
-// src/navigation/AppNavigator.js
 import React, { useContext } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -7,7 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext, ADMIN_EMAILS } from '../context/AuthContext';
 import { NotificationProvider, useNotifications } from '../context/NotificationContext';
 import { navigationRef } from '../services/NavigationService';
 
@@ -38,17 +37,11 @@ import ChatScreen from '../components/ChatScreen';
 import AdminExamNavigator from '../dashboard/admin/examManagement/ExamNavigator';
 import CertificateNavigator from '../dashboard/student/Certificate/CertificateNavigator';
 
-// ⬇️ NEW — Popup Banner
 import NotificationBanner from '../components/NotificationBanner';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-/* ============================================================
-   GLOBAL BANNER WRAPPER
-   Ye component NavigationContainer ke andar hoga
-   taaki useNavigation kaam kare
-   ============================================================ */
 function GlobalBanner() {
   const { bannerNotification, dismissBanner } = useNotifications();
   return (
@@ -144,11 +137,13 @@ function MainTabNavigator() {
             e.preventDefault();
             if (!user) {
               navigation.navigate('Login');
-            } else if (role === 'admin' || user.email?.toLowerCase() === 'hridesh027@gmail.com') {
-              navigation.navigate('AdminPanel');
-            } else {
-              navigation.navigate('StudentPanel');
+              return;
             }
+
+            const email = user.email?.trim().toLowerCase();
+            const admin = role === 'admin' || ADMIN_EMAILS.includes(email);
+
+            navigation.navigate(admin ? 'AdminPanel' : 'StudentPanel');
           },
         })}
       />
@@ -199,7 +194,6 @@ export default function AppNavigator() {
           <Stack.Screen name="ContactUs" component={QueriesForm} />
         </Stack.Navigator>
 
-        {/* ⬇️ WhatsApp-style popup banner — TOP of everything */}
         <GlobalBanner />
       </NavigationContainer>
     </NotificationProvider>

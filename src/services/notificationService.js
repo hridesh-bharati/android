@@ -372,3 +372,4 @@ export const markAsRead = (id) => readNotificationIds.add(id);
 export const markAllAsRead = (ids) => ids.forEach(id => readNotificationIds.add(id));
 export const isNotificationRead = (id) => readNotificationIds.has(id);
 export const getReadNotificationIds = () => Array.from(readNotificationIds);
+

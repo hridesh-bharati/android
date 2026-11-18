@@ -18,9 +18,10 @@
       },
       "softwareKeyboardLayoutMode": "resize",
       "permissions": [
-        "NOTIFICATIONS",
-        "VIBRATE",
-        "RECEIVE_BOOT_COMPLETED"
+        "android.permission.NOTIFICATIONS",
+        "android.permission.VIBRATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "ios": {
@@ -48,13 +49,16 @@
           "sounds": []
         }
       ],
-      "expo-font"
+      "expo-font",
+      "@react-native-google-signin/google-signin",
+      "expo-status-bar"
     ],
     "extra": {
       "apiUrl": "https://drishteeindia.com",
       "eas": {
         "projectId": "1d02f023-aeb9-47cd-9ad7-41f4f14cf552"
       }
-    }
+    },
+    "owner": "hrideshhb"
   }
 }

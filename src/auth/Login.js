@@ -1,7 +1,17 @@
-// src/auth/Login.js
 import React, { useState, useContext } from 'react';
-import { StyleSheet, Text, View, TextInput, Pressable, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { AuthContext } from '../context/AuthContext';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  TextInput, 
+  Pressable, 
+  Alert, 
+  ActivityIndicator, 
+  KeyboardAvoidingView, 
+  Platform, 
+  ScrollView 
+} from 'react-native';
+import { AuthContext, ADMIN_EMAILS } from '../context/AuthContext';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
@@ -20,12 +30,17 @@ export default function Login({ navigation }) {
   const { login, loginWithGoogle, loginWithGithub } = useContext(AuthContext);
 
   const handleNavigationRoute = (userEmail, userRole) => {
-    const cleanEmail = userEmail ? userEmail.trim().toLowerCase() : '';
-    if (cleanEmail === 'hridesh027@gmail.com' || userRole === 'admin') {
-      navigation.replace('AdminPanel');
-    } else {
-      navigation.replace('StudentPanel');
-    }
+    const cleanEmail = userEmail?.trim().toLowerCase();
+    const isAdmin = ADMIN_EMAILS.includes(cleanEmail) || userRole === 'admin';
+
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: isAdmin ? 'AdminPanel' : 'StudentPanel',
+        },
+      ],
+    });
   };
 
   const handleLogin = async () => {
@@ -37,7 +52,7 @@ export default function Login({ navigation }) {
     try {
       setLoading(true);
       const resUser = await login(email.trim(), password);
-      handleNavigationRoute(email, resUser?.role);
+      handleNavigationRoute(resUser?.email, resUser?.role);
     } catch (error) {
       Alert.alert('Login Failed', error.message);
     } finally {

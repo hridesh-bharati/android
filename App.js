@@ -1,7 +1,7 @@
 // App.js
 import React, { useEffect, useRef } from 'react';
-import { StatusBar, StyleSheet, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar, StyleSheet, Platform, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 
@@ -107,12 +107,14 @@ export default function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
-        <AppNavigator />
-      </SafeAreaView>
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <View style={styles.container}>
+          <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
+          <AppNavigator />
+        </View>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
 

@@ -1,32 +1,54 @@
-// src/context/AuthContext.js
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { 
-  authListener, 
-  getUserRole, 
-  loginWithEmail, 
-  signupWithEmail, 
-  logoutUser, 
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+} from 'react';
+
+import {
+  authListener,
+  getUserRole,
+  loginWithEmail,
+  signupWithEmail,
+  logoutUser,
   loginWithGoogleAuth,
-  loginWithGithubAuth 
+  loginWithGithubAuth,
 } from '../firebase/auth';
+
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
 export const AuthContext = createContext();
 
-// Custom hook to consume AuthContext safely
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
 
-// ✅ Helper to get photo from any field
+// All three authorized admin emails
+export const ADMIN_EMAILS = [
+  'hridesh027@gmail.com',
+  'ajaytiwari4@gmail.com',
+  'chauhansantosh045@gmail.com',
+];
+
+const isAdminEmail = (email) => {
+  return ADMIN_EMAILS.includes((email || '').trim().toLowerCase());
+};
+
 const getPhotoUrl = (data) => {
   if (!data) return null;
-  return data.photoURL || data.photoUrl || data.photo || data.avatar || data.profilePhoto || null;
+  return (
+    data.photoURL ||
+    data.photoUrl ||
+    data.photo ||
+    data.avatar ||
+    data.profilePhoto ||
+    null
+  );
 };
 
 export const AuthProvider = ({ children }) => {
@@ -35,64 +57,95 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
 
-  // ✅ Get user profile from Firestore
   const getUserProfileFromFirestore = async (uid) => {
+    if (!uid) return null;
     try {
       const userDoc = await getDoc(doc(db, 'users', uid));
-      if (userDoc.exists()) {
-        return userDoc.data();
-      }
-      return null;
+      return userDoc.exists() ? userDoc.data() : null;
     } catch (error) {
-      console.log('Error fetching user profile:', error);
-      return null;
+      console.log('Profile fetch error:', error);
+      throw error;
     }
   };
 
-  // ✅ Merge user data
-  const mergeUserData = (firebaseUser, profile) => {
+  const resolveUserRole = async (firebaseUser, profile) => {
+    if (!firebaseUser) return null;
+    let databaseRole = null;
+
+    try {
+      databaseRole = await getUserRole(firebaseUser.uid);
+    } catch (error) {
+      console.log('Role fetch error:', error);
+    }
+
+    const email = firebaseUser.email?.trim().toLowerCase();
+
+    if (
+      isAdminEmail(email) ||
+      profile?.role === 'admin' ||
+      databaseRole === 'admin'
+    ) {
+      return 'admin';
+    }
+
+    return profile?.role || databaseRole || 'student';
+  };
+
+  const mergeUserData = (firebaseUser, profile, userRole) => {
+    if (!firebaseUser) return null;
     return {
       ...firebaseUser,
-      displayName: profile?.name || 
-                   profile?.displayName || 
-                   firebaseUser.displayName || 
-                   firebaseUser.email?.split('@')[0] || 
-                   'User',
+      role: userRole || 'student',
+      displayName:
+        profile?.name ||
+        profile?.displayName ||
+        firebaseUser.displayName ||
+        firebaseUser.email?.split('@')[0] ||
+        'User',
       photoURL: getPhotoUrl(profile) || firebaseUser.photoURL || null,
       photoUrl: getPhotoUrl(profile) || firebaseUser.photoURL || null,
     };
   };
 
   useEffect(() => {
-    let unsubscribe = () => {};
-    
-    try {
-      unsubscribe = authListener(async (firebaseUser) => {
-        setLoading(true);
+    let active = true;
+
+    const unsubscribe = authListener(async (firebaseUser) => {
+      if (!active) return;
+      setLoading(true);
+
+      try {
         if (firebaseUser) {
-          // ✅ Get user profile from Firestore
           const profile = await getUserProfileFromFirestore(firebaseUser.uid);
+          const userRole = await resolveUserRole(firebaseUser, profile);
+          const mergedUser = mergeUserData(firebaseUser, profile, userRole);
+
+          if (!active) return;
           setUserProfile(profile);
-          
-          // ✅ Merge Firebase auth user with Firestore profile
-          const mergedUser = mergeUserData(firebaseUser, profile);
           setUser(mergedUser);
-          
-          const userRole = await getUserRole(firebaseUser.uid);
-          setRole(userRole || profile?.role || 'student');
+          setRole(userRole);
         } else {
+          if (!active) return;
           setUser(null);
           setRole(null);
           setUserProfile(null);
         }
-        setLoading(false);
-      });
-    } catch (error) {
-      console.log("Auth listener error:", error);
-      setLoading(false);
-    }
+      } catch (error) {
+        console.log('Authentication listener error:', error);
+        if (active) {
+          setUser(null);
+          setRole(null);
+          setUserProfile(null);
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    });
 
     return () => {
+      active = false;
       if (typeof unsubscribe === 'function') {
         unsubscribe();
       }
@@ -100,156 +153,146 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const resUser = await loginWithEmail(email, password);
-      
+      const cleanEmail = email.trim().toLowerCase();
+      const resUser = await loginWithEmail(cleanEmail, password);
       const profile = await getUserProfileFromFirestore(resUser.uid);
+      const userRole = await resolveUserRole(resUser, profile);
+      const mergedUser = mergeUserData(resUser, profile, userRole);
+
       setUserProfile(profile);
-      
-      const mergedUser = mergeUserData(resUser, profile);
       setUser(mergedUser);
-      
-      const userRole = await getUserRole(resUser.uid);
-      setRole(userRole || profile?.role || 'student');
+      setRole(userRole);
       return mergedUser;
-    } catch (error) {
-      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const signup = async (email, password, roleInput, userData = {}) => {
+  const signup = async (email, password, roleInput = 'student', userData = {}) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const resUser = await signupWithEmail(email, password, roleInput);
-      
-      const userDocRef = doc(db, 'users', resUser.uid);
-      await setDoc(userDocRef, {
-        name: userData.name || resUser.displayName || email.split('@')[0],
-        email: email,
-        photoURL: userData.photoURL || resUser.photoURL || null,
-        photoUrl: userData.photoUrl || resUser.photoURL || null,
-        role: roleInput || 'student',
-        createdAt: new Date().toISOString(),
-      });
-      
+      const cleanEmail = email.trim().toLowerCase();
+      const resUser = await signupWithEmail(cleanEmail, password, 'student');
+
+      if (resUser?.uid) {
+        const userDocRef = doc(db, 'users', resUser.uid);
+        await setDoc(
+          userDocRef,
+          {
+            name: userData.name || resUser.displayName || cleanEmail.split('@')[0],
+            email: cleanEmail,
+            photoURL: userData.photoURL || resUser.photoURL || null,
+            photoUrl: userData.photoUrl || resUser.photoURL || null,
+            role: 'student',
+            createdAt: new Date().toISOString(),
+          },
+          { merge: true }
+        );
+      }
+
       const profile = await getUserProfileFromFirestore(resUser.uid);
+      const userRole = await resolveUserRole(resUser, profile);
+      const mergedUser = mergeUserData(resUser, profile, userRole);
+
       setUserProfile(profile);
-      
-      const mergedUser = mergeUserData(resUser, profile);
       setUser(mergedUser);
-      
-      const userRole = await getUserRole(resUser.uid);
-      setRole(userRole || roleInput || 'student');
+      setRole(userRole);
       return mergedUser;
-    } catch (error) {
-      throw error;
     } finally {
       setLoading(false);
     }
   };
 
   const loginWithGoogle = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const resUser = await loginWithGoogleAuth();
-      
-      const profile = await getUserProfileFromFirestore(resUser.uid);
-      
+      let profile = await getUserProfileFromFirestore(resUser.uid);
+
       if (!profile) {
-        const userDocRef = doc(db, 'users', resUser.uid);
-        await setDoc(userDocRef, {
+        await setDoc(doc(db, 'users', resUser.uid), {
           name: resUser.displayName || resUser.email?.split('@')[0] || 'User',
-          email: resUser.email,
+          email: resUser.email?.toLowerCase(),
           photoURL: resUser.photoURL || null,
           photoUrl: resUser.photoURL || null,
           role: 'student',
           createdAt: new Date().toISOString(),
         });
+        profile = await getUserProfileFromFirestore(resUser.uid);
       }
-      
-      const updatedProfile = await getUserProfileFromFirestore(resUser.uid);
-      setUserProfile(updatedProfile);
-      
-      const mergedUser = mergeUserData(resUser, updatedProfile);
+
+      const userRole = await resolveUserRole(resUser, profile);
+      const mergedUser = mergeUserData(resUser, profile, userRole);
+
+      setUserProfile(profile);
       setUser(mergedUser);
-      
-      const userRole = await getUserRole(resUser.uid);
-      setRole(userRole || updatedProfile?.role || 'student');
+      setRole(userRole);
       return mergedUser;
-    } catch (error) {
-      throw error;
     } finally {
       setLoading(false);
     }
   };
 
   const loginWithGithub = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const resUser = await loginWithGithubAuth();
-      
-      const profile = await getUserProfileFromFirestore(resUser.uid);
-      
+      let profile = await getUserProfileFromFirestore(resUser.uid);
+
       if (!profile) {
-        const userDocRef = doc(db, 'users', resUser.uid);
-        await setDoc(userDocRef, {
+        await setDoc(doc(db, 'users', resUser.uid), {
           name: resUser.displayName || resUser.email?.split('@')[0] || 'User',
-          email: resUser.email,
+          email: resUser.email?.toLowerCase(),
           photoURL: resUser.photoURL || null,
           photoUrl: resUser.photoURL || null,
           role: 'student',
           createdAt: new Date().toISOString(),
         });
+        profile = await getUserProfileFromFirestore(resUser.uid);
       }
-      
-      const updatedProfile = await getUserProfileFromFirestore(resUser.uid);
-      setUserProfile(updatedProfile);
-      
-      const mergedUser = mergeUserData(resUser, updatedProfile);
+
+      const userRole = await resolveUserRole(resUser, profile);
+      const mergedUser = mergeUserData(resUser, profile, userRole);
+
+      setUserProfile(profile);
       setUser(mergedUser);
-      
-      const userRole = await getUserRole(resUser.uid);
-      setRole(userRole || updatedProfile?.role || 'student');
+      setRole(userRole);
       return mergedUser;
-    } catch (error) {
-      throw error;
     } finally {
       setLoading(false);
     }
   };
 
   const logout = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       await logoutUser();
       setUser(null);
       setRole(null);
       setUserProfile(null);
     } catch (error) {
-      console.log("Logout error:", error);
+      console.log('Logout error:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Value with all properties
-  const value = { 
-    user, 
-    role, 
-    loading, 
+  const value = {
+    user,
+    role,
+    loading,
     isLoggedIn: !!user,
-    isAdmin: role === 'admin',
+    isAdmin: role === 'admin' || ADMIN_EMAILS.includes(user?.email?.toLowerCase()),
     displayName: user?.displayName || user?.email?.split('@')[0] || 'User',
     photoURL: user?.photoURL || user?.photoUrl || null,
     userProfile,
-    login, 
-    signup, 
-    loginWithGoogle, 
-    loginWithGithub, 
-    logout 
+    login,
+    signup,
+    loginWithGoogle,
+    loginWithGithub,
+    logout,
   };
 
   return (
